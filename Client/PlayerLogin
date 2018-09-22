@@ -2,7 +2,7 @@ package players;
 
 import java.net.Socket;
 
-import players.login;
+import players.Login;
 
 public class playerLogin {
 	private static String host;
@@ -13,7 +13,7 @@ public class playerLogin {
 		try {
 			host=args[0];
 			port=Integer.parseInt(args[1]);
-			login window = new login();
+			Login window = new Login();
 			window.setClient(client,host,port);
 			window.main(args);
 		} catch (Exception e) {
