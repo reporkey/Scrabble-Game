@@ -13,12 +13,19 @@ public class Player {
     private InetAddress ip;
     private int port;
 
+    public JSONObject obj;
+
     public Player(Socket socket, JSONObject msg) {
         this.socket = socket;
         this.ip = socket.getInetAddress();
         this.port = socket.getPort();
         this.name = msg.getString("value");
 
+        obj = new JSONObject();
+        obj.put("ip", ip.getHostAddress());
+        obj.put("port", port);
+        obj.put("name", name);
+        obj.put("score", score);
     }
 
 
@@ -28,6 +35,7 @@ public class Player {
 
     public void setScore(int score) {
         this.score = score;
+        obj.put("score", score);
     }
 
     public int getVote() {
@@ -56,5 +64,9 @@ public class Player {
 
     public Socket getSocket() {
         return socket;
+    }
+
+    public JSONObject getObj() {
+        return obj;
     }
 }

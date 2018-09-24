@@ -4,16 +4,14 @@ import org.json.JSONObject;
 import javax.net.ServerSocketFactory;
 import java.io.*;
 import java.net.*;
-import java.util.ArrayList;
 
 public class World {
 
     private static final int port = 8080;
-    public volatile ArrayList<Player> players = new ArrayList<Player>();
+    public volatile MyArrayList<Player> players = new MyArrayList<Player>();
     private char[][] map = new char[20][20];
     public volatile String word = null;
     private int pass = 0;
-    private ServerSocket server;
 
     public World() {
 
