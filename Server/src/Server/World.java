@@ -1,14 +1,17 @@
 package Server;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 import javax.net.ServerSocketFactory;
 import java.io.*;
 import java.net.*;
+import java.util.ArrayList;
 
 public class World {
 
     private static final int port = 8080;
     public volatile MyArrayList<Player> players = new MyArrayList<Player>();
+    public volatile MyArrayList<Player> potentialPlayers = new MyArrayList<Player>();
     private char[][] map = new char[20][20];
     public volatile String word = null;
     private int pass = 0;
@@ -45,40 +48,92 @@ public class World {
             String msgStr = null;
 
             while ((msgStr = in.readLine()) != null) {
-                // if request connection
 
                 JSONObject msg = new JSONObject(msgStr);
+                JSONObject send = new JSONObject();
+                switch (msg.getString("method")) {
+                    case "join game": {
+                        Player player = new Player(client, msg);
+                        potentialPlayers.add(player);
+                        send.put("method", "join game");
+                        send.put("players", potentialPlayers.toJson());
+                        broadcast(send, potentialPlayers);
+                        break;
+                    }
 
-                if (msg.getString("method").equals("establish")) {
-                    Player player = new Player(client, msg);
-                    players.add(player);
-                }
-                if (msg.getString("method").equals("ready")) {
-                    for (Player player : players) {
-                        if (client.getInetAddress().equals(player.getIp()) && client.getPort() == player.getPort()) {
-                            player.setReady();
+                    case "request invite": {
+                        for (Object invited : (JSONArray) msg.get("players")) {
+                            String ip = ((JSONObject) invited).getString("ip");
+                            int port = ((JSONObject) invited).getInt("port");
+                            for (Player player : potentialPlayers) {
+                                if (ip.equals(player.getIp()) && port == player.getPort()) {
+                                    players.add(player);
+                                }
+                            }
                         }
+                        send.put("method", "request invite");
+                        send.put("from", msg.get("from"));
+                        broadcast(send);
+                        break;
                     }
-                }
-                if (msg.getString("method").equals("word")) {
-                    // if players pass, get empty word
-                    if (msg.getString("value").equals("") || msg.getString("value").equals(null)) {
-                        pass++;
-                        if (pass >= players.size()) {
-                            exit();
+
+                    case "response invite": {
+                        String ip = client.getInetAddress().getHostAddress();
+                        int port = client.getPort();
+                        // search which player send the msg
+                        for (Player player : potentialPlayers) {
+                            // if the player accept, put into players list
+                            if (ip.equals(player.getIp()) && port==player.getPort()) {
+                                if (msg.getBoolean("value")) {
+                                    players.add(player);
+                                    break;
+                                }
+                            }
                         }
-                    } else {
-                        pass = 0;
+                        send.put("method", "response invite");
+                        send.put("players", players.toJson());
+                        broadcast(send);
+                        break;
+                    }
+
+                    case "ready": {
+                        String ip = client.getInetAddress().getHostAddress();
+                        int port = client.getPort();
+                        // search which player send the msg
+                        for (Player player : players) {
+                            if (ip.equals(player.getIp()) && port == player.getPort()) {
+                                player.setReady();
+                            }
+                        }
+                        send.put("method", "ready");
+                        send.put("players", players.toJson());
+                        broadcast(send);
+                        break;
+                    }
+
+                    case "word": {
                         word = msg.getString("value");
+                        break;
                     }
-                }
-                if (msg.getString("method").equals("vote")) {
-                    for (Player player : players) {
-                        player.setVote(msg.getInt("value"));
+
+                    case "vote": {
+                        String ip = client.getInetAddress().getHostAddress();
+                        int port = client.getPort();
+                        // search which player send the msg
+                        for (Player player : players) {
+                            if (ip.equals(player.getIp()) && port == player.getPort()) {
+                                player.setVote(msg.getInt("value"));
+                            }
+                        }
+                        send.put("method", "update vote");
+                        send.put("players", players.toJson());
+                        broadcast(send);
+                        break;
                     }
-                }
-                if (msg.getString("method").equals("end")) {
-                    exit();
+
+                    case "end":
+                        exit();
+                        break;
                 }
             }
         }catch (IOException e){
@@ -109,11 +164,11 @@ public class World {
                 for (Player player : players) {
 
                     // send whose turn
-                    JSONObject msg = new JSONObject();
-                    msg.put("method", "begin");
-                    msg.put("map", map);
-                    msg.put("player",player);
-                    broadcast(msg);
+                    JSONObject send = new JSONObject();
+                    send.put("method", "begin");
+                    send.put("map", map);
+                    send.put("player",player);
+                    broadcast(send);
 
                     // wait until receive a word
                     while (true) {
@@ -127,14 +182,18 @@ public class World {
                         }
                     }
 
-                    // the player does not pass
+                    // the player does not pass, send vote
                     if (!word.equals("")){
-                        msg = new JSONObject();
-                        msg.put("method", "vote");
-                        msg.put("value", word);
-                        msg.put("map", map);
-                        msg.put("player",player);
-                        broadcast(msg);
+                        pass = 0;
+                        send = new JSONObject();
+                        send.put("method", "vote");
+                        send.put("word", word);
+                        send.put("map", map);
+                        send.put("player",player.getObj());
+                        broadcast(send);
+                    }else{
+                        pass++;
+                        continue;
                     }
 
                     // wait until receive all vote
@@ -149,7 +208,7 @@ public class World {
                         for (Player temp : players){
                             if (temp.getVote() == 1) {
                                 vote++;
-                            }else if (temp.getVote() == -1){
+                            }else if (temp.getVote() == 0){
                                 vote = -1;
                                 break;
                             }
@@ -159,9 +218,11 @@ public class World {
                         }
                     }
 
-                    // if all player vote yes
+                    // if all players had voted or someone vote no
                     if (vote == players.size()){
                         player.setScore(player.getScore() + word.length());
+                    }else if (vote == -1){
+                        continue;
                     }
 
                     // if map full
@@ -173,6 +234,13 @@ public class World {
                         }
                     }
 
+                    // if all plays pass
+                    if (pass >= players.size()) {
+                        exit();
+                    }
+
+                    // reset
+                    word = null;
                 }
             }
         }
@@ -185,6 +253,21 @@ public class World {
         for (Player player : players){
             try {
                 BufferedWriter out = new BufferedWriter(new OutputStreamWriter(player.getSocket().getOutputStream(), "UTF-8"));
+                out.write(msg.toString());
+                out.flush();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public void broadcast(JSONObject msg, MyArrayList players){
+
+        for (Object player : players){
+            try {
+                BufferedWriter out =
+                        new BufferedWriter(new OutputStreamWriter(((Player) player).getSocket().getOutputStream(),
+                                "UTF-8"));
                 out.write(msg.toString());
                 out.flush();
             } catch (IOException e) {
