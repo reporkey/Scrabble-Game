@@ -13,6 +13,7 @@ public class World {
     private char[][] map = new char[20][20];
     public volatile String word = null;
     private int pass = 0;
+    private ServerSocket server;
 
     public World() {
 
@@ -51,7 +52,7 @@ public class World {
                 JSONObject msg = new JSONObject(msgStr);
 
                 if (msg.getString("method").equals("establish")) {
-                    Player player = new Player(client);
+                    Player player = new Player(client, msg);
                     players.add(player);
                 }
                 if (msg.getString("method").equals("ready")) {
@@ -95,7 +96,7 @@ public class World {
             while(true) {
                 int ready = 0;
                 for (Player player : players) {
-                    if (player.getReady() == 1) {
+                    if (player.getReady()) {
                         ready++;
                     }
                 }
@@ -114,7 +115,7 @@ public class World {
                     msg.put("method", "begin");
                     msg.put("map", map);
                     msg.put("player",player);
-                    boardcast(msg);
+                    broadcast(msg);
 
                     // wait until receive a word
                     while (true) {
@@ -135,7 +136,7 @@ public class World {
                         msg.put("value", word);
                         msg.put("map", map);
                         msg.put("player",player);
-                        boardcast(msg);
+                        broadcast(msg);
                     }
 
                     // wait until receive all vote
@@ -176,19 +177,16 @@ public class World {
 
                 }
             }
-
-
         }
     }
 
 // methods
 
-    public void boardcast(JSONObject msg){
+    public void broadcast(JSONObject msg){
 
         for (Player player : players){
             try {
-                BufferedWriter out = new BufferedWriter(new OutputStreamWriter(player.getSocket().getOutputStream(), "UTF" +
-                        "-8"));
+                BufferedWriter out = new BufferedWriter(new OutputStreamWriter(player.getSocket().getOutputStream(), "UTF-8"));
                 out.write(msg.toString());
                 out.flush();
             } catch (IOException e) {
@@ -204,7 +202,7 @@ public class World {
         msg.put("value", players);
         msg.put("map", map);
 
-        boardcast(msg);
+        broadcast(msg);
 
         System.out.println("Game Over. Server Closed.");
         System.exit(0);

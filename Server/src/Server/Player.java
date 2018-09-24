@@ -1,5 +1,6 @@
 package Server;
 
+import org.json.JSONObject;
 import java.net.InetAddress;
 import java.net.Socket;
 
@@ -8,23 +9,18 @@ public class Player {
     private String name;
     private int score = 0;
     private int vote = 0;
-    private int ready = 0;
+    private boolean ready = false;
     private InetAddress ip;
     private int port;
 
-    public Player(Socket socket) {
+    public Player(Socket socket, JSONObject msg) {
         this.socket = socket;
         this.ip = socket.getInetAddress();
         this.port = socket.getPort();
+        this.name = msg.getString("value");
+
     }
 
-    public String getName() {
-        return this.name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
 
     public int getScore() {
         return this.score;
@@ -42,12 +38,12 @@ public class Player {
         this.vote = vote;
     }
 
-    public int getReady() {
-        return this.ready;
+    public boolean getReady() {
+        return ready;
     }
 
-    public void SetReady(int num) {
-        this.ready = num;
+    public void setReady() {
+        this.ready = true;
     }
 
     public int getPort() {
@@ -56,5 +52,9 @@ public class Player {
 
     public InetAddress getIp() {
         return this.ip;
+    }
+
+    public Socket getSocket() {
+        return socket;
     }
 }
