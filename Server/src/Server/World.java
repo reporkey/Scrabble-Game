@@ -5,7 +5,8 @@ import org.json.JSONObject;
 import javax.net.ServerSocketFactory;
 import java.io.*;
 import java.net.*;
-import java.util.ArrayList;
+
+// 2D char array to 2D JsonArray
 
 public class World {
 
@@ -84,7 +85,7 @@ public class World {
                         for (Player player : potentialPlayers) {
                             // if the player accept, put into players list
                             if (ip.equals(player.getIp()) && port==player.getPort()) {
-                                if (msg.getBoolean("value")) {
+                                if (msg.getInt("value") == 1) {
                                     players.add(player);
                                     break;
                                 }
@@ -111,8 +112,9 @@ public class World {
                         break;
                     }
 
-                    case "word": {
-                        word = msg.getString("value");
+                    case "turn": {
+                        word = msg.getString("word");
+                        map = msg.get("map");
                         break;
                     }
 
@@ -149,7 +151,7 @@ public class World {
             while(true) {
                 int ready = 0;
                 for (Player player : players) {
-                    if (player.getReady()) {
+                    if (player.getReady() == 1) {
                         ready++;
                     }
                 }
@@ -165,9 +167,9 @@ public class World {
 
                     // send whose turn
                     JSONObject send = new JSONObject();
-                    send.put("method", "begin");
+                    send.put("method", "turn");
                     send.put("map", map);
-                    send.put("player",player);
+                    send.put("player",player.getObj());
                     broadcast(send);
 
                     // wait until receive a word
@@ -280,7 +282,7 @@ public class World {
 
         JSONObject msg = new JSONObject();
         msg.put("method", "end");
-        msg.put("value", players);
+        msg.put("players", players.toJson());
         msg.put("map", map);
 
         broadcast(msg);

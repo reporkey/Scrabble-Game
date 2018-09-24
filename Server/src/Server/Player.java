@@ -10,7 +10,7 @@ public class Player {
     private String ip;
     private int port;
     private String name;
-    private boolean ready = false;
+    private int ready = 0;
     private int vote = -1;
     private int score = 0;
     private JSONObject obj;
@@ -19,7 +19,7 @@ public class Player {
         this.socket = socket;
         this.ip = socket.getInetAddress().getHostAddress();
         this.port = socket.getPort();
-        this.name = msg.getString("value");
+        this.name = msg.getString("name");
 
         obj = new JSONObject();
         obj.put("ip", ip);
@@ -41,12 +41,12 @@ public class Player {
         return this.port;
     }
 
-    public boolean getReady() {
+    public int getReady() {
         return ready;
     }
 
     public void setReady() {
-        this.ready = true;
+        this.ready = 1;
         obj.put("ready", ready);
     }
 
