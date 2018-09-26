@@ -35,6 +35,7 @@ public class Room extends JFrame {
 	private int randomNum;
 	private Socket client;
 	private static ArrayList<PlayerC> potentialPlayers;
+	private static ArrayList<PlayerC> players;
 	private static JPanel panelPlayer2, panelPlayer3, panelPlayer4, panelPlayer5, panelPlayer6, panelPlayer7;
 	private static JLabel P2, P3, P4, P5, P6, P7;
 	static messLisCall messageLisCall = new messLisCall();
@@ -86,7 +87,7 @@ public class Room extends JFrame {
 		panel_1.setLayout(null);
 
 		JLabel logout = new JLabel("");
-		logout.setBounds(689, 6, 24, 24);
+		logout.setBounds(677, 14, 24, 24);
 		panel_1.add(logout);
 		logout.addMouseListener(new MouseAdapter() {
 			@Override
@@ -115,9 +116,9 @@ public class Room extends JFrame {
 		panel_3.setLayout(null);
 
 		JLabel usernameLable = new JLabel("");
-		usernameLable.setBounds(18, 19, 177, 19);
+		usernameLable.setBounds(12, 20, 177, 19);
 		panel_3.add(usernameLable);
-		usernameLable.setFont(new Font("Lucida Grande", Font.PLAIN, 15));
+		usernameLable.setFont(new Font("Lithos Pro", Font.PLAIN, 15));
 		usernameLable.setForeground(Color.WHITE);
 		usernameLable.setText("Welcome, " + name);
 
@@ -157,6 +158,13 @@ public class Room extends JFrame {
 		panel_4.add(label_1, gbc_label_1);
 
 		JButton btnNewButton = new JButton("Scrabble");
+		btnNewButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				Board game = new Board(players, client);
+				game.setUndecorated(true);
+				game.setVisible(true);
+			}
+		});
 		btnNewButton.setBounds(39, 209, 117, 29);
 		panel_2.add(btnNewButton);
 
@@ -173,12 +181,18 @@ public class Room extends JFrame {
 		panelPlayer2.setVisible(false);
 
 		P2 = new JLabel("");
-		P2.setBounds(18, 37, 61, 16);
+		P2.setBounds(19, 71, 61, 16);
 		panelPlayer2.add(P2);
 
 		JCheckBox C1 = new JCheckBox("");
 		C1.setBounds(0, 0, 28, 23);
 		panelPlayer2.add(C1);
+
+		JLabel R2 = new JLabel("");
+		R2.setFont(new Font("Lithos Pro", Font.PLAIN, 13));
+		R2.setForeground(Color.RED);
+		R2.setBounds(33, 43, 61, 16);
+		panelPlayer2.add(R2);
 
 		panelPlayer5 = new JPanel();
 		panelPlayer5.setBounds(52, 176, 100, 93);
@@ -187,12 +201,18 @@ public class Room extends JFrame {
 		panelPlayer5.setVisible(false);
 
 		P5 = new JLabel("");
-		P5.setBounds(21, 40, 61, 16);
+		P5.setBounds(19, 71, 61, 16);
 		panelPlayer5.add(P5);
 
 		JCheckBox C4 = new JCheckBox("");
 		C4.setBounds(0, 0, 28, 23);
 		panelPlayer5.add(C4);
+
+		JLabel R5 = new JLabel("");
+		R5.setFont(new Font("Lithos Pro", Font.PLAIN, 13));
+		R5.setForeground(Color.RED);
+		R5.setBounds(33, 43, 61, 16);
+		panelPlayer5.add(R5);
 
 		panelPlayer6 = new JPanel();
 		panelPlayer6.setBounds(222, 176, 100, 93);
@@ -201,12 +221,18 @@ public class Room extends JFrame {
 		panelPlayer6.setVisible(false);
 
 		P6 = new JLabel("");
-		P6.setBounds(21, 37, 61, 16);
+		P6.setBounds(20, 71, 61, 16);
 		panelPlayer6.add(P6);
 
 		JCheckBox C5 = new JCheckBox("");
 		C5.setBounds(0, 2, 28, 23);
 		panelPlayer6.add(C5);
+
+		JLabel R6 = new JLabel("");
+		R6.setFont(new Font("Lithos Pro", Font.PLAIN, 13));
+		R6.setForeground(Color.RED);
+		R6.setBounds(33, 43, 61, 16);
+		panelPlayer6.add(R6);
 
 		panelPlayer7 = new JPanel();
 		panelPlayer7.setBounds(387, 176, 100, 93);
@@ -215,12 +241,18 @@ public class Room extends JFrame {
 		panelPlayer7.setVisible(false);
 
 		P7 = new JLabel("");
-		P7.setBounds(21, 37, 61, 16);
+		P7.setBounds(21, 71, 61, 16);
 		panelPlayer7.add(P7);
 
 		JCheckBox C6 = new JCheckBox("");
 		C6.setBounds(0, 0, 28, 23);
 		panelPlayer7.add(C6);
+
+		JLabel R7 = new JLabel("");
+		R7.setFont(new Font("Lithos Pro", Font.PLAIN, 13));
+		R7.setForeground(Color.RED);
+		R7.setBounds(33, 42, 61, 16);
+		panelPlayer7.add(R7);
 
 		panelPlayer4 = new JPanel();
 		panelPlayer4.setBounds(387, 48, 100, 93);
@@ -229,12 +261,18 @@ public class Room extends JFrame {
 		panelPlayer4.setVisible(false);
 
 		P4 = new JLabel("");
-		P4.setBounds(21, 38, 61, 16);
+		P4.setBounds(21, 71, 61, 16);
 		panelPlayer4.add(P4);
 
 		JCheckBox C3 = new JCheckBox("");
 		C3.setBounds(0, 0, 28, 23);
 		panelPlayer4.add(C3);
+
+		JLabel R4 = new JLabel("");
+		R4.setFont(new Font("Lithos Pro", Font.PLAIN, 13));
+		R4.setForeground(Color.RED);
+		R4.setBounds(33, 43, 61, 16);
+		panelPlayer4.add(R4);
 
 		panelPlayer3 = new JPanel();
 		panelPlayer3.setBounds(222, 48, 100, 93);
@@ -243,28 +281,90 @@ public class Room extends JFrame {
 		panelPlayer3.setVisible(false);
 
 		P3 = new JLabel("");
-		P3.setBounds(19, 39, 61, 16);
+		P3.setBounds(18, 71, 61, 16);
 		panelPlayer3.add(P3);
 
 		JCheckBox C2 = new JCheckBox("");
 		C2.setBounds(0, 0, 28, 23);
 		panelPlayer3.add(C2);
 
+		JLabel R3 = new JLabel("");
+		R3.setFont(new Font("Lithos Pro", Font.PLAIN, 13));
+		R3.setForeground(Color.RED);
+		R3.setBounds(33, 43, 61, 16);
+		panelPlayer3.add(R3);
+
 		JButton btnInvite = new JButton("Invite");
 		btnInvite.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-
+				//potentialPlayers=messageLisCall.getvalue();
+				String sendMsg = "";
+				try {
+					// {"method":"join
+					// game","players":[{"score":0,"port":52276,"ready":0,"ip":"127.0.0.1","name":"123"}]}
+					Writer output = new OutputStreamWriter(client.getOutputStream(), "UTF-8");
+					if (C1.isSelected()) {
+						sendMsg += "\"name\":" + "\"" + potentialPlayers.get(0).getName() + "\"," + "\"port\":" + "\""
+								+ Integer.toString(potentialPlayers.get(0).getPort())  + "\"," + "\"score\":" + "\""
+								+ Integer.toString(potentialPlayers.get(0).getScore())  + "\"," + "\"reday\":" + "\""
+								+ Boolean.toString(potentialPlayers.get(0).getReady()) + "\"," + "\"ip\":" + "\""
+								+ potentialPlayers.get(0).getIp().toString() + "\",";
+						R2.setText("WAIT");
+					}
+					if (C2.isSelected()) {
+						sendMsg += "\"name\":" + "\"" + potentialPlayers.get(1).getName() + "\"," + "\"port\":" + "\""
+								+ Integer.toString(potentialPlayers.get(1).getPort())  + "\"," + "\"score\":" + "\""
+								+ Integer.toString(potentialPlayers.get(1).getScore())  + "\"," + "\"reday\":" + "\""
+								+ Boolean.toString(potentialPlayers.get(1).getReady()) + "\"," + "\"ip\":" + "\""
+								+ potentialPlayers.get(1).getIp().toString() + "\",";
+						R3.setText("WAIT");
+					}
+					if (C3.isSelected()) {
+						sendMsg += "\"name\":" + "\"" + potentialPlayers.get(2).getName() + "\"," + "\"port\":" + "\""
+								+ Integer.toString(potentialPlayers.get(2).getPort())  + "\"," + "\"score\":" + "\""
+								+ Integer.toString(potentialPlayers.get(2).getScore())  + "\"," + "\"reday\":" + "\""
+								+ Boolean.toString(potentialPlayers.get(2).getReady()) + "\"," + "\"ip\":" + "\""
+								+ potentialPlayers.get(2).getIp().toString() + "\",";
+						R4.setText("WAIT");
+					}
+					if (C4.isSelected()) {
+						sendMsg += "\"name\":" + "\"" + potentialPlayers.get(3).getName() + "\"," + "\"port\":" + "\""
+								+ Integer.toString(potentialPlayers.get(3).getPort())  + "\"," + "\"score\":" + "\""
+								+ Integer.toString(potentialPlayers.get(3).getScore())  + "\"," + "\"reday\":" + "\""
+								+ Boolean.toString(potentialPlayers.get(3).getReady()) + "\"," + "\"ip\":" + "\""
+								+ potentialPlayers.get(3).getIp().toString() + "\",";
+						R5.setText("WAIT");
+					}
+					if (C5.isSelected()) {
+						sendMsg += "\"name\":" + "\"" + potentialPlayers.get(4).getName() + "\"," + "\"port\":" + "\""
+								+ Integer.toString(potentialPlayers.get(4).getPort())  + "\"," + "\"score\":" + "\""
+								+ Integer.toString(potentialPlayers.get(4).getScore())  + "\"," + "\"reday\":" + "\""
+								+ Boolean.toString(potentialPlayers.get(4).getReady()) + "\"," + "\"ip\":" + "\""
+								+ potentialPlayers.get(4).getIp().toString() + "\",";
+						R6.setText("WAIT");
+					}
+					if (C6.isSelected()) {
+						sendMsg += "\"name\":" + "\"" + potentialPlayers.get(5).getName() + "\"," + "\"port\":" + "\""
+								+ Integer.toString(potentialPlayers.get(5).getPort())  + "\"," + "\"score\":" + "\""
+								+ Integer.toString(potentialPlayers.get(5).getScore())  + "\"," + "\"reday\":" + "\""
+								+ Boolean.toString(potentialPlayers.get(5).getReady()) + "\"," + "\"ip\":" + "\""
+								+ potentialPlayers.get(5).getIp().toString() + "\",";
+						R7.setText("WAIT");
+					}
+					output.write("{" + "\"method\":" + "\"" + "request invite" + "\"," + "\"players\":[{" + sendMsg
+							+ "}]}" + "\n");
+					output.flush();
+				} catch (UnsupportedEncodingException e1) {
+					e1.printStackTrace();
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
 			}
 		});
 		btnInvite.setBounds(39, 250, 117, 29);
 		panel_2.add(btnInvite);
 		if (count > 0)
 			checkPlayerSize(potentialPlayers);
-	}
-
-	public static void callback() {
-		System.out.println("Thread End");
-		flag = true;
 	}
 
 	public static void checkPlayerSize(ArrayList<PlayerC> potentialPlayers) {
@@ -342,6 +442,7 @@ class messLisCall {
 
 class messLis extends Thread {
 	static messLisCall messageLisCall = new messLisCall();
+
 	public messLis(String name, Socket client) {
 		this.name = name;
 		this.client = client;
@@ -354,32 +455,47 @@ class messLis extends Thread {
 	@Override
 	public void run() {
 		String msgStr = null;
-	
+
 		try {
 			BufferedReader input = new BufferedReader(new InputStreamReader(client.getInputStream(), "UTF-8"));
 			while ((msgStr = input.readLine()) != null) {
 				ArrayList<PlayerC> potentialPlayers = new ArrayList<PlayerC>();
 				JSONObject msg = new JSONObject(msgStr);
-				JSONArray arr = msg.getJSONArray("players");
-				for (int i = 0; i < arr.length(); i++) {
-					String name2 = arr.getJSONObject(i).getString("name");
-					if (!name2.equals(name)) {
-						int score = arr.getJSONObject(i).getInt("score");
-						// String img = arr.getJSONObject(i).getString("img");
-						PlayerC player = new PlayerC(client, msg);
-						player.setName(name2);
-						player.setScore(score);
-						potentialPlayers.add(player);
+				switch (msg.getString("method")) {
+				case "join game": {
+					JSONArray arr = msg.getJSONArray("players");
+					for (int i = 0; i < arr.length(); i++) {
+						String name2 = arr.getJSONObject(i).getString("name");
+						if (!name2.equals(name)) {
+							int score = arr.getJSONObject(i).getInt("score");
+							// String img =
+							// arr.getJSONObject(i).getString("img");
+							PlayerC player = new PlayerC(client, msg);
+							player.setName(name2);
+							player.setScore(score);
+							potentialPlayers.add(player);
+						}
 					}
+					messageLisCall.setvalue(potentialPlayers);
+					Room.checkPlayerSize(potentialPlayers);
 				}
-				messageLisCall.setvalue(potentialPlayers);
-				Room.checkPlayerSize(potentialPlayers);
+				case "request invite": {
+					// {"method":"request invite","players":[{null"name":"2",}]}
+					// {"method":"join
+					// game","players":[{"score":0,"port":52276,"ready":0,"ip":"127.0.0.1","name":"123"}]}
+
+				}
+				case "response invite": {
+
+				}
+				case "ready": {
+
+				}
+				}
 			}
-		}
-		catch (JSONException | IOException e) {
+		} catch (JSONException | IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		Room.callback();
 	}
 }
