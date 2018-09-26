@@ -367,7 +367,8 @@ public class Room extends JFrame {
 			checkPlayerSize(potentialPlayers);
 	}
 
-	public static void checkPlayerSize(ArrayList<PlayerC> potentialPlayers) {
+	public static void checkPlayerSize(ArrayList<PlayerC> potentialPlayer) {
+		potentialPlayers=potentialPlayer;
 		panelPlayer2.setVisible(false);
 		panelPlayer3.setVisible(false);
 		panelPlayer4.setVisible(false);
