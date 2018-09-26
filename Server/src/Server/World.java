@@ -6,16 +6,14 @@ import javax.net.ServerSocketFactory;
 import java.io.*;
 import java.net.*;
 
-// 2D char array to 2D JsonArray
-
 public class World {
 
     private static final int port = 8080;
     public volatile MyArrayList<Player> players = new MyArrayList<Player>();
     public volatile MyArrayList<Player> potentialPlayers = new MyArrayList<Player>();
-    private char[][] map = new char[20][20];
+    private volatile JSONArray map = new JSONArray();
     public volatile String word = null;
-    private int pass = 0;
+    private volatile int pass = 0;
 
     public World() {
 
@@ -63,7 +61,8 @@ public class World {
                     }
 
                     case "request invite": {
-                        for (Object invited : (JSONArray) msg.get("players")) {
+                        for (int i=0; i<((JSONArray) msg.get("players")).length() ; i++) {
+                            JSONObject invited = ((JSONArray) msg.get("players")).getJSONObject(i);
                             String ip = ((JSONObject) invited).getString("ip");
                             int port = ((JSONObject) invited).getInt("port");
                             for (Player player : potentialPlayers) {
@@ -114,7 +113,7 @@ public class World {
 
                     case "turn": {
                         word = msg.getString("word");
-                        map = msg.get("map");
+                        map = (JSONArray) msg.get("map");
                         break;
                     }
 
@@ -228,9 +227,11 @@ public class World {
                     }
 
                     // if map full
-                    for (char[] row : map){
-                        for(char point : row){
-                            if (point == '\u0000'){
+                    for (int i=0; i<map.length() ; i++) {
+                        JSONArray row = map.getJSONArray(i);
+                        for(int j=0; j<map.length() ; j++) {
+                            char letter = (char) row.get(i);
+                            if (letter == '\u0000'){
                                 exit();
                             }
                         }
