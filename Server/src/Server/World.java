@@ -63,8 +63,8 @@ public class World {
                     case "request invite": {
                         for (int i=0; i<((JSONArray) msg.get("players")).length() ; i++) {
                             JSONObject invited = ((JSONArray) msg.get("players")).getJSONObject(i);
-                            String ip = ((JSONObject) invited).getString("ip");
-                            int port = ((JSONObject) invited).getInt("port");
+                            String ip = invited.getString("ip");
+                            int port = invited.getInt("port");
                             for (Player player : potentialPlayers) {
                                 if (ip.equals(player.getIp()) && port == player.getPort()) {
                                     players.add(player);
