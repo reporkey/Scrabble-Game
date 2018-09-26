@@ -256,7 +256,7 @@ public class World {
         for (Player player : players){
             try {
                 BufferedWriter out = new BufferedWriter(new OutputStreamWriter(player.getSocket().getOutputStream(), "UTF-8"));
-                out.write(msg.toString());
+                out.write(msg.toString() + "\n");
                 out.flush();
             } catch (IOException e) {
                 e.printStackTrace();
@@ -271,7 +271,7 @@ public class World {
                 BufferedWriter out =
                         new BufferedWriter(new OutputStreamWriter(((Player) player).getSocket().getOutputStream(),
                                 "UTF-8"));
-                out.write(msg.toString());
+                out.write(msg.toString() + "\n");
                 out.flush();
             } catch (IOException e) {
                 e.printStackTrace();
