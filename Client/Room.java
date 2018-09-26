@@ -351,8 +351,8 @@ public class Room extends JFrame {
 								+ potentialPlayers.get(5).getIp().toString() + "\",";
 						R7.setText("WAIT");
 					}
-					output.write("{" + "\"method\":" + "\"" + "request invite" + "\"," + "\"players\":[{" + sendMsg
-							+ "}]}" + "\n");
+					output.write("{" + "\"method\":" + "\"" + "request invite" + "\"," + "\"from\":" + "\""
+							+ name + "\"," + "\"players\":[{" + sendMsg + "}]}" + "\n");
 					output.flush();
 				} catch (UnsupportedEncodingException e1) {
 					e1.printStackTrace();
