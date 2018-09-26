@@ -18,6 +18,8 @@ import javax.swing.JPanel;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+
 import java.awt.Font;
 
 public class ChessBoard extends JFrame {
@@ -75,7 +77,7 @@ public class ChessBoard extends JFrame {
 				squares[i][j].setOpaque(true);
 				squares[i][j].setBorderPainted(true);
 				squares[i][j].setBorder(border);
-        
+
 				panel.add(squares[i][j]);
 				squares[i][j].addActionListener(buttonHandler);
 			}
@@ -109,23 +111,28 @@ public class ChessBoard extends JFrame {
 		btnNo.setBounds(255, 41, 212, 69);
 		panel_1.add(btnNo);
 		
+		//the label showing the voting result
 		JLabel lblVResult = new JLabel();
 		lblVResult.setBounds(518, 576, 196, 116);
 		contentPane.add(lblVResult);
 		
 		//if voting result is no
-		ImageIcon icon = new ImageIcon(ChessBoard.class.getResource("/players/img/sad.png"));
+		ImageIcon icon = new ImageIcon(ChessBoard.class.getResource("/img/sad.png"));
 		Image image = icon.getImage();
 		Image newimg = image.getScaledInstance(110, 110, java.awt.Image.SCALE_SMOOTH);
 		lblVResult.setIcon(new ImageIcon(newimg));
 		
 		//if voting result is yes
-		ImageIcon icon2 = new ImageIcon(ChessBoard.class.getResource("/players/img/smile.png"));
+		ImageIcon icon2 = new ImageIcon(ChessBoard.class.getResource("/img/smile.png"));
 		Image image2 = icon2.getImage();
 		Image newimg2 = image2.getScaledInstance(110, 110, java.awt.Image.SCALE_SMOOTH);
 		lblVResult.setIcon(new ImageIcon(newimg2));
 		
-		//could add a ? with when no result need to be displayed
+		//when no result need to be displayed
+		ImageIcon icon3 = new ImageIcon(ChessBoard.class.getResource("/img/question.png"));
+		Image image3 = icon3.getImage();
+		Image newimg3 = image3.getScaledInstance(110, 110, java.awt.Image.SCALE_SMOOTH);
+		lblVResult.setIcon(new ImageIcon(newimg3));
 		
 		JLabel lblVotingResult = new JLabel("Voting Result:");
 		lblVotingResult.setForeground(new Color(255, 153, 204));
@@ -172,10 +179,13 @@ public class ChessBoard extends JFrame {
 	//is valid if no character placed before
 	private boolean isValidMove(int i, int j)
 	{
-		return true;
+		if (squares[i][j].getText().equals(""))  
+			return true;
+		else
+			return false;
 	}
 	
-	//the effect of border and others..
+	//the effect of border and show character
 	private void processClick(int row, int col)
 	{
 		if (isValidMove(row, col) == false)
@@ -192,31 +202,32 @@ public class ChessBoard extends JFrame {
 		squares[row][col].setBorder(borderB);
 		
 		squares[row][col].addKeyListener(new KeyListener(){
-			  @Override
-        public void keyPressed(KeyEvent e) {
-            char input = e.getKeyChar();
-            System.out.println(e.getKeyChar());
-            ImageIcon icon = new ImageIcon(ChessBoard.class.getResource("/players/img/"+input+".png"));
-            Image image = icon.getImage();
-            Image newimg = image.getScaledInstance(20, 20, java.awt.Image.SCALE_SMOOTH);
-            squares[row][col].setIcon(new ImageIcon(newimg));
-        }
-			  @Override
-        public void keyTyped(KeyEvent e) {
+			@Override
+            public void keyPressed(KeyEvent e) {
+				if (!squares[row][col].getText().equals("")) return;
+                if(e.getKeyCode() >= 65 && e.getKeyCode() <= 90){
+					char input = e.getKeyChar();
+					System.out.println(e.getKeyChar());
+					squares[row][col].setText(Character.toString(input));
+                }
+                else {
+                	JOptionPane.showMessageDialog(null,"Please input an alphabet", "Oops!", JOptionPane.WARNING_MESSAGE);
+                }
+            }
+			@Override
+            public void keyTyped(KeyEvent e) {
 				
-			  }
-			  @Override
-        public void keyReleased(KeyEvent e) {
-				    squares[row][col].setBorderPainted(true);
-			  }
+			}
+			@Override
+            public void keyReleased(KeyEvent e) {
+				squares[row][col].setBorderPainted(true);
+			}
 		});
 		
+	}
+
+	protected static void showMessageDialog(Object object, String string, String string2, int warningMessage) {
+		// TODO Auto-generated method stub
 		
-		//squares[row][col].setIcon(letter);
-		
-		//squares[row][col].setIcon(null);
-		//squares[i][j].setIcon(letter);
-//		row = i;
-//		col = j;
 	}
 }
