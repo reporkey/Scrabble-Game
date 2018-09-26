@@ -4,7 +4,7 @@ import java.net.Socket;
 
 import players.Login;
 
-public class playerLogin {
+public class Main {
 	private static String host;
 	private static int port;
 	private static Socket client;
@@ -15,7 +15,8 @@ public class playerLogin {
 			port=Integer.parseInt(args[1]);
 			Login window = new Login();
 			window.setClient(client,host,port);
-			window.main(args);
+			window.setUndecorated(true);
+			window.setVisible(true);
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
 		}
