@@ -498,10 +498,8 @@ public class Room extends JFrame {
 							JSONArray arr = msg.getJSONArray("players");
 							potentialPlayers = new MyArrayList<Player>();
 							for (int i = 0; i < arr.length(); i++) {
-								String getName = arr.getJSONObject(i).getString("name");
-								String path = arr.getJSONObject(i).getString("path");
-								Player player = new Player(getName, path);
-								if (!getName.equals(name)) {
+								Player player = new Player(arr.getJSONObject(i));
+								if (!player.getName().equals(name)) {
 									potentialPlayers.add(player);
 								}
 							}

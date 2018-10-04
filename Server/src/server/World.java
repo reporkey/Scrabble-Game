@@ -216,6 +216,12 @@ public class World {
 				// iterate player's turn
 				for (Player player : players) {
 					
+					// reset word
+					word = null;
+					for (Player temp : players) {
+						temp.setVote(-1);
+					}
+					
 					// if all plays pass
 					System.out.println("pass: " + pass + ", player size: " + players.size());
 					if (pass >= players.size()) {
@@ -293,9 +299,6 @@ public class World {
 							}
 						}
 						if (vote == -1 || vote == players.size()) {
-							for (Player temp2 : players) {
-								temp2.setVote(-1);
-							}
 							break;
 						}
 					}
@@ -330,9 +333,6 @@ public class World {
 						}
 
 					}*/
-
-					// reset
-					word = null;
 				}
 			}
 		}

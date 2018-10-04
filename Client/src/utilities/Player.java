@@ -15,20 +15,6 @@ public class Player {
     private int score = 0;
     private JSONObject obj;
 
-    public Player(String name,String path) throws JSONException {
-    	
-        this.name = name;
-        this.path=path;                
-
-        obj = new JSONObject();
-        obj.put("name", name);
-        obj.put("path", path);
-        obj.put("accept", accept);
-        obj.put("vote", vote);
-        obj.put("score", score);
-    }
-
-
     public Player(JSONObject obj) {
 		this.obj = obj;
 		try {
@@ -53,15 +39,6 @@ public class Player {
         obj.put("accept", accept);
     }
 
-    public int getVote() {
-        return this.vote;
-    }
-
-    public void setVote(int vote) throws JSONException {
-        this.vote = vote;
-        obj.put("vote", vote);
-    }
-
     public int getScore() {
         return this.score;
     }
@@ -73,5 +50,14 @@ public class Player {
 
 	public String getName() {
 		return name;
+	}
+	
+	public String getVoteString() {
+		switch (vote) {
+		case -1: return "Waiting";
+		case 0: return "No";
+		case 1: return "Yes";
+		default: return "ERROR";
+		}
 	}
 }

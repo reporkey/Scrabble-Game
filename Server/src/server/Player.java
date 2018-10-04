@@ -69,6 +69,12 @@ public class Player {
 
     public void setVote(int vote) {
         this.vote = vote;
+        try {
+			obj.put("vote", vote);
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
     }
     
     public int getScore() {

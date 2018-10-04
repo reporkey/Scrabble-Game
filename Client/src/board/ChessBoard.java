@@ -547,77 +547,74 @@ public class ChessBoard extends JFrame {
 			lblTurn.setText("Other player's turn.");
 			lblTurn.paintImmediately(lblTurn.getVisibleRect());
 		}
-		try {
-			switch (players.size()) {
+		switch (players.size()) {
 			case 7: {
-				P7.setText(players.get(6).getObj().getString("name"));
-				scoreP7.setText(Integer.toString(players.get(6).getObj().getInt("score")));
+				P7.setText(players.get(6).getName());
+				scoreP7.setText(Integer.toString(players.get(6).getScore()));
 				scoreP7.paintImmediately(scoreP7.getVisibleRect());
-				voteP7.setText(Integer.toString(players.get(6).getObj().getInt("vote")));
+				voteP7.setText(players.get(6).getVoteString());
 				voteP7.paintImmediately(voteP7.getVisibleRect());
 				// I7.setIcon(new
 				// ImageIcon(Room.class.getResource(temp.get(5).getObj().getString("path"))));
 			}
 			case 6: {
-				P6.setText(players.get(5).getObj().getString("name"));
-				scoreP6.setText(Integer.toString(players.get(5).getObj().getInt("score")));
+				P6.setText(players.get(5).getName());
+				scoreP6.setText(Integer.toString(players.get(5).getScore()));
 				scoreP6.paintImmediately(scoreP6.getVisibleRect());
-				voteP6.setText(Integer.toString(players.get(5).getObj().getInt("vote")));
+				voteP6.setText(players.get(5).getVoteString());
 				voteP6.paintImmediately(voteP6.getVisibleRect());
 				// I6.setIcon(new
 				// ImageIcon(Room.class.getResource(temp.get(4).getObj().getString("path"))));
 			}
 			case 5: {
-				P5.setText(players.get(4).getObj().getString("name"));
-				scoreP5.setText(Integer.toString(players.get(4).getObj().getInt("score")));
+				P5.setText(players.get(4).getName());
+				scoreP5.setText(Integer.toString(players.get(4).getScore()));
 				scoreP5.paintImmediately(scoreP5.getVisibleRect());
-				voteP5.setText(Integer.toString(players.get(4).getObj().getInt("vote")));
+				voteP5.setText(players.get(4).getVoteString());
 				voteP5.paintImmediately(voteP5.getVisibleRect());
 				// I5.setIcon(new
 				// ImageIcon(Room.class.getResource(temp.get(3).getObj().getString("path"))));
 			}
 			case 4: {
-				P4.setText(players.get(3).getObj().getString("name"));
-				scoreP4.setText(Integer.toString(players.get(3).getObj().getInt("score")));
+				P4.setText(players.get(3).getName());
+				scoreP4.setText(Integer.toString(players.get(3).getScore()));
 				scoreP4.paintImmediately(scoreP4.getVisibleRect());
-				voteP4.setText(Integer.toString(players.get(3).getObj().getInt("vote")));
+				voteP4.setText(players.get(3).getVoteString());
 				voteP4.paintImmediately(voteP4.getVisibleRect());
 				// I4.setIcon(new
 				// ImageIcon(Room.class.getResource(temp.get(2).getObj().getString("path"))));
 			}
 			case 3: {
-				P3.setText(players.get(2).getObj().getString("name"));
-				scoreP3.setText(Integer.toString(players.get(2).getObj().getInt("score")));
+				P3.setText(players.get(2).getName());
+				scoreP3.setText(Integer.toString(players.get(2).getScore()));
 				scoreP3.paintImmediately(scoreP3.getVisibleRect());
-				voteP3.setText(Integer.toString(players.get(2).getObj().getInt("vote")));
+				voteP3.setText(players.get(2).getVoteString());
 				voteP3.paintImmediately(voteP3.getVisibleRect());
 				// I3.setIcon(new
 				// ImageIcon(Room.class.getResource(temp.get(1).getObj().getString("path"))));
 			}
 			case 2: {
-				P2.setText(players.get(1).getObj().getString("name"));
-				scoreP2.setText(Integer.toString(players.get(1).getObj().getInt("score")));
+				P2.setText(players.get(1).getName());
+				scoreP2.setText(Integer.toString(players.get(1).getScore()));
 				scoreP2.paintImmediately(scoreP2.getVisibleRect());
-				voteP2.setText(Integer.toString(players.get(1).getObj().getInt("vote")));
+				voteP2.setText(players.get(1).getVoteString());
 				voteP2.paintImmediately(voteP2.getVisibleRect());
 				// I2.setIcon(new
 				// ImageIcon(Room.class.getResource(temp.get(0).getObj().getString("path"))));
 			}
 			case 1: {
-				P1.setText(players.get(0).getObj().getString("name"));
-				scoreP1.setText(Integer.toString(players.get(0).getObj().getInt("score")));
+				P1.setText(players.get(0).getName());
+				scoreP1.setText(Integer.toString(players.get(0).getScore()));
 				scoreP1.paintImmediately(scoreP1.getVisibleRect());
-				voteP1.setText(Integer.toString(players.get(0).getObj().getInt("vote")));
+				voteP1.setText(players.get(0).getVoteString());
 				voteP1.paintImmediately(voteP1.getVisibleRect());
 				// I2.setIcon(new
 				// ImageIcon(Room.class.getResource(temp.get(0).getObj().getString("path"))));
 				break;
 			}
-			default:
+			default: {
 				System.out.print("Wrong size" + players.size());
 			}
-		} catch (JSONException e) {
-			e.printStackTrace();
 		}
 	}
 
