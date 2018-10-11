@@ -27,7 +27,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import room.Room;
-import room.Room.Listener;
 import utilities.MyArrayList;
 import utilities.Player;
 
@@ -44,7 +43,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 
-public class ChessBoard extends JFrame {
+public class ChessBoard extends JFrame implements ActionListener, KeyListener {
 
 	private JPanel contentPane;
 	private Socket client;
@@ -52,15 +51,16 @@ public class ChessBoard extends JFrame {
 	private boolean myTurn = false;
 	private int xx, xy;
 	private MyArrayList<Player> players;
-	private static JLabel P1, P2, P3, P4, P5, P6, P7, scoreP1, scoreP2, scoreP3, scoreP4, scoreP5, scoreP6, scoreP7;
+	private static JLabel P1, P2, P3, P4, scoreP1, scoreP2, scoreP3, scoreP4;
 	private String voteWords;
 	private JButton[][] squares = new JButton[20][20];
 	Border borderW = BorderFactory.createLineBorder(Color.WHITE, 1);
 	Border borderB = BorderFactory.createLineBorder(Color.BLACK, 1);
 
 	String word = "";
-	private JLabel lblTurn, voteWord, labelPlayerName;
-	private JLabel voteP1,voteP2,voteP3,voteP4,voteP5,voteP6,voteP7;
+	private JLabel lblTurn, labelPlayerName;
+	private JLabel voteP1, voteP2, voteP3, voteP4;
+	private JLabel lblImg1, lblImg2, lblImg3, lblImg4;
 
 	public ChessBoard(String name, JSONObject msg, Socket client, boolean myTurn) {
 		this.name = name;
@@ -79,13 +79,13 @@ public class ChessBoard extends JFrame {
 		}
 		Listener listener = new Listener();
 		listener.start();
-		
+
 		guiInitialize();
 	}
 
 	private void guiInitialize() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 744, 725);
+		setBounds(100, 100, 711, 577);
 		contentPane = new JPanel();
 		contentPane.setBackground(Color.WHITE);
 		contentPane.addMouseMotionListener(new MouseMotionAdapter() {
@@ -114,25 +114,13 @@ public class ChessBoard extends JFrame {
 		for (int i = 0; i < 20; i++) {
 			for (int j = 0; j < 20; j++) {
 				squares[i][j] = new JButton();
-				squares[i][j].setBackground(new Color(242, 229, 210));
+				squares[i][j].setBackground(Color.white);
 				squares[i][j].setOpaque(true);
 				squares[i][j].setBorderPainted(true);
-				squares[i][j].setBorder(borderW);
+				squares[i][j].setBorder(borderB);
 				panel.add(squares[i][j]);
-				squares[i][j].addActionListener((e) -> {
-					// only if its my turn
-					if (myTurn) {
-						Object source = e.getSource();
-						for (int x = 0; x < 20; x++) {
-							for (int y = 0; y < 20; y++) {
-								if (source == squares[x][y]) {
-									processClick(x, y);
-								}
-							}
-						}
-						myTurn = false;
-					}
-				});
+				squares[i][j].addActionListener(this);
+				squares[i][j].addKeyListener(this);
 			}
 		}
 
@@ -141,200 +129,97 @@ public class ChessBoard extends JFrame {
 		panel.setVisible(true);
 		contentPane.add(panel);
 
-		JLabel lblPleaseVote = new JLabel("Do you think string in black box is a word? Please vote... ");
-		lblPleaseVote.setForeground(Color.ORANGE);
-		lblPleaseVote.setFont(new Font("Skia", Font.PLAIN, 16));
-		lblPleaseVote.setBounds(16, 548, 490, 16);
-		contentPane.add(lblPleaseVote);
-
-		JPanel panel_1 = new JPanel();
-		panel_1.setBackground(Color.WHITE);
-		panel_1.setBounds(26, 587, 277, 93);
-		contentPane.add(panel_1);
-		panel_1.setLayout(null);
-
-		JButton btnYes = new JButton("Yes!");
-		btnYes.setFont(new Font("Monaco", Font.BOLD, 18));
-		btnYes.setBounds(6, 46, 113, 35);
-		panel_1.add(btnYes);
-
-		JButton btnNo = new JButton("No..");
-		btnNo.setFont(new Font("Monaco", Font.BOLD, 18));
-		btnNo.setBounds(151, 46, 106, 35);
-		panel_1.add(btnNo);
-
-		voteWord = new JLabel("");
-		voteWord.setFont(new Font("Monaco", Font.BOLD, 17));
-		voteWord.setBounds(6, 6, 106, 28);
-		panel_1.add(voteWord);
-/*
-		// the label showing the voting result
-		JLabel lblVResult = new JLabel();
-		lblVResult.setBounds(518, 576, 196, 116);
-		contentPane.add(lblVResult);
-
-		// if voting result is no
-		ImageIcon icon = new ImageIcon(ChessBoard.class.getResource("/img/sad.png"));
-		Image image = icon.getImage();
-		Image newimg = image.getScaledInstance(110, 110, java.awt.Image.SCALE_SMOOTH);
-		lblVResult.setIcon(new ImageIcon(newimg));
-
-		// if voting result is yes
-		ImageIcon icon2 = new ImageIcon(ChessBoard.class.getResource("/img/smile.png"));
-		Image image2 = icon2.getImage();
-		Image newimg2 = image2.getScaledInstance(110, 110, java.awt.Image.SCALE_SMOOTH);
-		lblVResult.setIcon(new ImageIcon(newimg2));
-
-		// when no result need to be displayed
-		ImageIcon icon3 = new ImageIcon(ChessBoard.class.getResource("/img/question.png"));
-		Image image3 = icon3.getImage();
-		Image newimg3 = image3.getScaledInstance(110, 110, java.awt.Image.SCALE_SMOOTH);
-		lblVResult.setIcon(new ImageIcon(newimg3));*/
-
-		JLabel lblVotingResult = new JLabel("Voting Result:");
-		lblVotingResult.setForeground(new Color(255, 153, 204));
-		lblVotingResult.setFont(new Font("Apple Braille", Font.BOLD, 18));
-		lblVotingResult.setBounds(518, 538, 196, 35);
-		contentPane.add(lblVotingResult);
-
 		JPanel panel_2 = new JPanel();
 		panel_2.setBackground(new Color(84, 127, 206));
 		panel_2.setBounds(518, 47, 185, 489);
 		contentPane.add(panel_2);
 		panel_2.setLayout(null);
 
-		JLabel lblPlayers = new JLabel("Players/Score/Vote");
+		JLabel lblPlayers = new JLabel("Player List");
 		lblPlayers.setForeground(Color.WHITE);
 		lblPlayers.setFont(new Font("Muna", Font.BOLD, 16));
 		lblPlayers.setBounds(6, 6, 173, 24);
 		panel_2.add(lblPlayers);
 
 		P1 = new JLabel("");
-		P1.setBounds(26, 42, 44, 16);
+		P1.setBounds(121, 42, 44, 16);
 		panel_2.add(P1);
 
 		scoreP1 = new JLabel("");
-		scoreP1.setBounds(75, 42, 44, 16);
+		scoreP1.setBounds(121, 62, 44, 16);
 		panel_2.add(scoreP1);
-		
+
 		voteP1 = new JLabel("");
-		voteP1.setBounds(121, 42, 44, 16);
+		voteP1.setBounds(121, 82, 44, 16);
 		panel_2.add(voteP1);
 
 		P2 = new JLabel("");
-		P2.setBounds(26, 83, 44, 16);
+		P2.setBounds(121, 122, 44, 16);
 		panel_2.add(P2);
 
 		scoreP2 = new JLabel("");
-		scoreP2.setBounds(75, 83, 44, 16);
+		scoreP2.setBounds(121, 142, 44, 16);
 		panel_2.add(scoreP2);
 
 		P3 = new JLabel("");
-		P3.setBounds(26, 121, 44, 16);
+		P3.setBounds(121, 205, 44, 16);
 		panel_2.add(P3);
 
 		scoreP3 = new JLabel("");
-		scoreP3.setBounds(75, 121, 44, 16);
+		scoreP3.setBounds(121, 225, 44, 16);
 		panel_2.add(scoreP3);
 
 		P4 = new JLabel("");
-		P4.setBounds(26, 160, 44, 16);
+		P4.setBounds(121, 289, 44, 16);
 		panel_2.add(P4);
 
 		scoreP4 = new JLabel("");
-		scoreP4.setBounds(99, 160, 44, 16);
+		scoreP4.setBounds(121, 309, 44, 16);
 		panel_2.add(scoreP4);
 
-		P5 = new JLabel("");
-		P5.setBounds(26, 198, 44, 16);
-		panel_2.add(P5);
-
-		scoreP5 = new JLabel("");
-		scoreP5.setBounds(99, 198, 44, 16);
-		panel_2.add(scoreP5);
-
-		P6 = new JLabel("");
-		P6.setBounds(26, 239, 44, 16);
-		panel_2.add(P6);
-
-		scoreP6 = new JLabel("");
-		scoreP6.setBounds(99, 239, 44, 16);
-		panel_2.add(scoreP6);
-
-		P7 = new JLabel("");
-		P7.setBounds(26, 274, 44, 16);
-		panel_2.add(P7);
-
-		scoreP7 = new JLabel("");
-		scoreP7.setBounds(75, 274, 44, 16);
-		panel_2.add(scoreP7);
-
-		labelPlayerName = new JLabel("");
+		labelPlayerName = new JLabel("name");
 		labelPlayerName.setBounds(26, 371, 134, 33);
+		labelPlayerName.setForeground(Color.WHITE);
 		panel_2.add(labelPlayerName);
 
-		lblTurn = new JLabel("");
-		lblTurn.setBounds(26, 416, 134, 33);
+		lblTurn = new JLabel("turn");
+		lblTurn.setBounds(26, 412, 134, 33);
+		lblTurn.setForeground(Color.WHITE);
+		lblTurn.setFont(new Font("Muna", Font.PLAIN, 14));
 		panel_2.add(lblTurn);
-		
+
 		voteP2 = new JLabel("");
-		voteP2.setBounds(121, 83, 44, 16);
+		voteP2.setBounds(121, 162, 44, 16);
 		panel_2.add(voteP2);
-		
+
 		voteP3 = new JLabel("");
-		voteP3.setBounds(121, 121, 44, 16);
+		voteP3.setBounds(121, 245, 44, 16);
 		panel_2.add(voteP3);
-		
+
 		voteP4 = new JLabel("");
-		voteP4.setBounds(121, 160, 44, 16);
+		voteP4.setBounds(121, 329, 44, 16);
 		panel_2.add(voteP4);
-		
-		voteP5 = new JLabel("");
-		voteP5.setBounds(121, 198, 44, 16);
-		panel_2.add(voteP5);
-		
-		voteP6 = new JLabel("");
-		voteP6.setBounds(121, 239, 44, 16);
-		panel_2.add(voteP6);
-		
-		voteP7 = new JLabel("");
-		voteP7.setBounds(121, 274, 44, 16);
-		panel_2.add(voteP7);
 
-		JLabel lblNewLabel = new JLabel("Please place a character…");
-		lblNewLabel.setForeground(Color.ORANGE);
-		lblNewLabel.setFont(new Font("Skia", Font.PLAIN, 16));
-		lblNewLabel.setBounds(16, 19, 500, 16);
-		contentPane.add(lblNewLabel);
+		lblImg1 = new JLabel("");
+		lblImg1.setBounds(26, 36, 69, 69);
+		panel_2.add(lblImg1);
 
-		JLabel logout = new JLabel("");
+		lblImg2 = new JLabel("");
+		lblImg2.setBounds(26, 113, 69, 69);
+		panel_2.add(lblImg2);
 
-		logout.setIcon(new ImageIcon(ChessBoard.class.getResource("/img/logout.png")));
-		logout.setBounds(653, 8, 61, 29);
-		contentPane.add(logout);
+		lblImg3 = new JLabel("");
+		lblImg3.setBounds(26, 205, 69, 69);
+		panel_2.add(lblImg3);
+
+		lblImg4 = new JLabel("");
+		lblImg4.setBounds(26, 273, 69, 69);
+		panel_2.add(lblImg4);
 
 		JButton btnPass = new JButton("Pass");
-		btnPass.setFont(new Font("Monaco", Font.BOLD, 18));
-		btnPass.setBounds(339, 634, 125, 35);
-		contentPane.add(btnPass);
-
-		// exit
-		logout.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseClicked(MouseEvent e) {
-				JSONObject sendMsg = new JSONObject();
-				try {
-					Writer output = new OutputStreamWriter(client.getOutputStream(), "UTF-8");
-					sendMsg.put("method", "end");
-					output.write(sendMsg.toString() + "\n");
-					output.flush();
-					System.exit(0);
-				} catch (JSONException | IOException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
-			}
-		});
+		btnPass.setBounds(56, 450, 104, 33);
+		panel_2.add(btnPass);
+		btnPass.setFont(new Font("Monaco", Font.BOLD, 16));
 
 		// pass
 		btnPass.addMouseListener(new MouseAdapter() {
@@ -364,40 +249,119 @@ public class ChessBoard extends JFrame {
 				}
 			}
 		});
-		//Yes
-		btnYes.addMouseListener(new MouseAdapter() {
+
+		JLabel logout = new JLabel("");
+
+		logout.setIcon(new ImageIcon(ChessBoard.class.getResource("/img/logout.png")));
+		logout.setBounds(653, 8, 61, 29);
+		contentPane.add(logout);
+
+		// exit
+		logout.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				JSONObject sendMsg = new JSONObject();
 				try {
 					Writer output = new OutputStreamWriter(client.getOutputStream(), "UTF-8");
-					sendMsg.put("method", "vote");
-					sendMsg.put("value", 1);
+					sendMsg.put("method", "end");
 					output.write(sendMsg.toString() + "\n");
 					output.flush();
+					System.exit(0);
 				} catch (JSONException | IOException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
 			}
 		});
-		//No
-		btnNo.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseClicked(MouseEvent e) {
-				JSONObject sendMsg = new JSONObject();
-				try {
-					Writer output = new OutputStreamWriter(client.getOutputStream(), "UTF-8");
-					sendMsg.put("method", "vote");
-					sendMsg.put("value", 0);
-					output.write(sendMsg.toString() + "\n");
-					output.flush();
-				} catch (JSONException | IOException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
+	}
+
+	// button click
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		if (e.getSource() instanceof JButton) {
+			// only if its my turn
+			if (myTurn) {
+				Object source = e.getSource();
+				for (int x = 0; x < 20; x++) {
+					for (int y = 0; y < 20; y++) {
+						if (source == squares[x][y]) {
+							processClick(x, y);
+						}
+					}
 				}
 			}
-		});
+		}
+	}
+
+	@Override
+	public void keyPressed(KeyEvent e) {
+		Object source = e.getSource();
+		for (int i = 0; i < 20; i++) {
+			for (int j = 0; j < 20; j++) {
+				if (source == squares[i][j]) {
+					if (!squares[i][j].getText().equals(""))
+						return;
+					if (e.getKeyCode() >= 65 && e.getKeyCode() <= 90) {
+						char input = e.getKeyChar();
+						// System.out.println(e.getKeyChar());
+						squares[i][j].setText(Character.toString(input));
+					} else {
+						JOptionPane.showMessageDialog(null, "Please input an alphabet", "Oops!",
+								JOptionPane.WARNING_MESSAGE);
+					}
+				}
+			}
+		}
+	}
+
+	@Override
+	public void keyTyped(KeyEvent e) {
+	}
+
+	@Override
+	public void keyReleased(KeyEvent e) {
+		Object source = e.getSource();
+		for (int i = 0; i < 20; i++) {
+			for (int j = 0; j < 20; j++) {
+				if (source == squares[i][j]) {
+					squares[i][j].setBorderPainted(true);
+					if (e.getKeyCode() >= 37 && e.getKeyCode() <= 40) { // UP &
+																		// DOWN
+						if (e.getKeyCode() == 38 || e.getKeyCode() == 40) {
+							word = checkVWord(i, j);
+						} else { // LEFT & RIGHT
+							word = checkHWord(i, j);
+							// sendword to server
+						}
+						System.out.println("My selected word: " + word);
+						JSONObject sendMsg = new JSONObject();
+						try {
+							Writer output = new OutputStreamWriter(client.getOutputStream(), "UTF-8");
+							sendMsg.put("method", "turn");
+							sendMsg.put("word", word);
+							// generated 2D json array
+							JSONArray map = new JSONArray();
+							for (int x = 0; x < 20; x++) {
+								JSONArray cloumn = new JSONArray();
+								for (int y = 0; y < 20; y++) {
+									cloumn.put(squares[x][y].getText());
+								}
+								map.put(cloumn);
+							}
+							sendMsg.put("map", map);
+							System.out.println(sendMsg.toString());
+							output.write(sendMsg.toString() + "\n");
+							output.flush();
+							myTurn = false;
+						} catch (JSONException | IOException e1) { // TODOAuto-generated
+																	// catch
+																	// block
+							e1.printStackTrace();
+						}
+					}
+				}
+			}
+		}
 	}
 
 	// is valid if no character placed before
@@ -417,77 +381,13 @@ public class ChessBoard extends JFrame {
 		for (int i = 0; i < 20; i++) {
 			for (int j = 0; j < 20; j++) {
 				squares[i][j].setBorderPainted(true);
-				squares[i][j].setBorder(borderW);
+				squares[i][j].setBorder(borderB);
+				squares[i][j].setBackground(Color.WHITE);
 			}
 		}
 		squares[row][col].setBorderPainted(true);
-		squares[row][col].setBorder(borderB);
-
-		// capture char input
-		squares[row][col].addKeyListener(new KeyListener() {
-			@Override
-			public void keyPressed(KeyEvent e) {
-				if (!squares[row][col].getText().equals(""))
-					return;
-				if (e.getKeyCode() >= 65 && e.getKeyCode() <= 90) {
-					char input = e.getKeyChar();
-					// System.out.println(e.getKeyChar());
-					squares[row][col].setText(Character.toString(input));
-				} else {
-					JOptionPane.showMessageDialog(null, "Please input an alphabet", "Oops!",
-							JOptionPane.WARNING_MESSAGE);
-				}
-			}
-
-			@Override
-			public void keyTyped(KeyEvent e) {
-			}
-
-			@Override
-			public void keyReleased(KeyEvent e) {
-				squares[row][col].setBorderPainted(true);
-				if (e.getKeyCode() >= 37 && e.getKeyCode() <= 40) {
-					// UP & DOWN
-					if (e.getKeyCode() == 38 || e.getKeyCode() == 40) {
-						word = checkVWord(row, col);
-						voteWord.setText(word);
-						voteWord.paintImmediately(voteWord.getVisibleRect());
-					} else {
-						// LEFT & RIGHT
-						word = checkHWord(row, col);
-						voteWord.setText(word);
-						voteWord.paintImmediately(voteWord.getVisibleRect());
-						// send word to server						
-					}
-					System.out.println("My selected word: " + word);
-					JSONObject sendMsg = new JSONObject();
-					try {
-						Writer output = new OutputStreamWriter(client.getOutputStream(), "UTF-8");
-						sendMsg.put("method", "turn");
-						sendMsg.put("word", word);
-						// generated 2D json array
-						JSONArray map = new JSONArray();
-						for (int i = 0; i < 20; i++) {
-							JSONArray cloumn = new JSONArray();
-							for (int j = 0; j < 20; j++) {
-								cloumn.put(squares[i][j].getText());
-							}
-							map.put(cloumn);
-						}
-						sendMsg.put("map", map);
-						System.out.println(sendMsg.toString());
-						output.write(sendMsg.toString() + "\n");
-						output.flush();
-					} catch (JSONException | IOException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					}
-				}
-
-				
-			}
-		});
-
+		squares[row][col].setBorder(borderW);
+		squares[row][col].setBackground(Color.yellow);
 	}
 
 	// get the vertical word
@@ -500,13 +400,14 @@ public class ChessBoard extends JFrame {
 				break;
 			}
 		}
-		
-		for (int i = start; true ; i++) {
+
+		for (int i = start; true; i++) {
 			if (!squares[i][col].getText().equals("")) {
 				word = word + squares[i][col].getText();
 				squares[i][col].setBorderPainted(true);
 				squares[i][col].setBorder(borderB);
-			}else {
+				squares[i][col].setBackground(Color.yellow);
+			} else {
 				break;
 			}
 		}
@@ -529,7 +430,8 @@ public class ChessBoard extends JFrame {
 				word = word + squares[row][j].getText();
 				squares[row][j].setBorderPainted(true);
 				squares[row][j].setBorder(borderB);
-			}else {
+				squares[row][j].setBackground(Color.yellow);
+			} else {
 				break;
 			}
 		}
@@ -540,82 +442,63 @@ public class ChessBoard extends JFrame {
 	// display score
 	public void setPlayerList() {
 		labelPlayerName.setText("Welcome " + name);
+		labelPlayerName.setFont(new Font("Muna", Font.BOLD, 16));
 		if (myTurn) {
 			lblTurn.setText("Your turn.");
-			lblTurn.paintImmediately(lblTurn.getVisibleRect());
+			//lblTurn.paintImmediately(lblTurn.getVisibleRect());
 		} else {
 			lblTurn.setText("Other player's turn.");
-			lblTurn.paintImmediately(lblTurn.getVisibleRect());
+			//lblTurn.paintImmediately(lblTurn.getVisibleRect());
 		}
 		switch (players.size()) {
-			case 7: {
-				P7.setText(players.get(6).getName());
-				scoreP7.setText(Integer.toString(players.get(6).getScore()));
-				scoreP7.paintImmediately(scoreP7.getVisibleRect());
-				voteP7.setText(players.get(6).getVoteString());
-				voteP7.paintImmediately(voteP7.getVisibleRect());
-				// I7.setIcon(new
-				// ImageIcon(Room.class.getResource(temp.get(5).getObj().getString("path"))));
-			}
-			case 6: {
-				P6.setText(players.get(5).getName());
-				scoreP6.setText(Integer.toString(players.get(5).getScore()));
-				scoreP6.paintImmediately(scoreP6.getVisibleRect());
-				voteP6.setText(players.get(5).getVoteString());
-				voteP6.paintImmediately(voteP6.getVisibleRect());
-				// I6.setIcon(new
-				// ImageIcon(Room.class.getResource(temp.get(4).getObj().getString("path"))));
-			}
-			case 5: {
-				P5.setText(players.get(4).getName());
-				scoreP5.setText(Integer.toString(players.get(4).getScore()));
-				scoreP5.paintImmediately(scoreP5.getVisibleRect());
-				voteP5.setText(players.get(4).getVoteString());
-				voteP5.paintImmediately(voteP5.getVisibleRect());
-				// I5.setIcon(new
-				// ImageIcon(Room.class.getResource(temp.get(3).getObj().getString("path"))));
-			}
-			case 4: {
-				P4.setText(players.get(3).getName());
-				scoreP4.setText(Integer.toString(players.get(3).getScore()));
-				scoreP4.paintImmediately(scoreP4.getVisibleRect());
-				voteP4.setText(players.get(3).getVoteString());
-				voteP4.paintImmediately(voteP4.getVisibleRect());
-				// I4.setIcon(new
-				// ImageIcon(Room.class.getResource(temp.get(2).getObj().getString("path"))));
-			}
-			case 3: {
-				P3.setText(players.get(2).getName());
-				scoreP3.setText(Integer.toString(players.get(2).getScore()));
-				scoreP3.paintImmediately(scoreP3.getVisibleRect());
-				voteP3.setText(players.get(2).getVoteString());
-				voteP3.paintImmediately(voteP3.getVisibleRect());
-				// I3.setIcon(new
-				// ImageIcon(Room.class.getResource(temp.get(1).getObj().getString("path"))));
-			}
-			case 2: {
-				P2.setText(players.get(1).getName());
-				scoreP2.setText(Integer.toString(players.get(1).getScore()));
-				scoreP2.paintImmediately(scoreP2.getVisibleRect());
-				voteP2.setText(players.get(1).getVoteString());
-				voteP2.paintImmediately(voteP2.getVisibleRect());
-				// I2.setIcon(new
-				// ImageIcon(Room.class.getResource(temp.get(0).getObj().getString("path"))));
-			}
-			case 1: {
-				P1.setText(players.get(0).getName());
-				scoreP1.setText(Integer.toString(players.get(0).getScore()));
-				scoreP1.paintImmediately(scoreP1.getVisibleRect());
-				voteP1.setText(players.get(0).getVoteString());
-				voteP1.paintImmediately(voteP1.getVisibleRect());
-				// I2.setIcon(new
-				// ImageIcon(Room.class.getResource(temp.get(0).getObj().getString("path"))));
-				break;
-			}
-			default: {
-				System.out.print("Wrong size" + players.size());
-			}
+		case 4: {
+			P4.setText(players.get(3).getName());
+			scoreP4.setText(Integer.toString(players.get(3).getScore()));
+			//scoreP4.paintImmediately(scoreP4.getVisibleRect());
+			voteP4.setText(players.get(3).getVoteString());
+			//voteP4.paintImmediately(voteP4.getVisibleRect());
+			lblImg4.setIcon(new ImageIcon(ChessBoard.class.getResource(players.get(3).getPath())));
 		}
+		case 3: {
+			P3.setText(players.get(2).getName());
+			scoreP3.setText(Integer.toString(players.get(2).getScore()));
+			//scoreP3.paintImmediately(scoreP3.getVisibleRect());
+			voteP3.setText(players.get(2).getVoteString());
+			//voteP3.paintImmediately(voteP3.getVisibleRect());
+			lblImg3.setIcon(new ImageIcon(ChessBoard.class.getResource(players.get(2).getPath())));
+		}
+		case 2: {
+			P2.setText(players.get(1).getName());
+			scoreP2.setText(Integer.toString(players.get(1).getScore()));
+			//scoreP2.paintImmediately(scoreP2.getVisibleRect());
+			voteP2.setText(players.get(1).getVoteString());
+			//voteP2.paintImmediately(voteP2.getVisibleRect());
+			lblImg2.setIcon(new ImageIcon(ChessBoard.class.getResource(players.get(1).getPath())));
+		}
+		case 1: {
+			P1.setText(players.get(0).getName());
+			scoreP1.setText(Integer.toString(players.get(0).getScore()));
+			//scoreP1.paintImmediately(scoreP1.getVisibleRect());
+			voteP1.setText(players.get(0).getVoteString());
+			//voteP1.paintImmediately(voteP1.getVisibleRect());
+			lblImg1.setIcon(new ImageIcon(ChessBoard.class.getResource(players.get(0).getPath())));
+			break;
+		}
+		default: {
+			System.out.print("Wrong size" + players.size());
+		}
+		}
+	}
+
+	// show vote message
+	public static int showMsg(String word) {
+		String[] buttons = { "No", "YES" };
+		// response =0 is no, =1 is yes
+		int response = 0;
+		String mgs = "Please vote";
+		response = JOptionPane.showOptionDialog(null, "Do you agree [ " + word + " ] is a word?", mgs,
+				JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, buttons, buttons[1]);
+		return response;
 	}
 
 	// listener subclass / thread
@@ -640,7 +523,7 @@ public class ChessBoard extends JFrame {
 							JSONArray row = map.getJSONArray(i);
 							for (int j = 0; j < row.length(); j++) {
 								squares[i][j].setText(row.getString(j));
-								squares[i][j].paintImmediately(squares[i][j].getVisibleRect());
+								//squares[i][j].paintImmediately(squares[i][j].getVisibleRect());
 							}
 						}
 						// update player
@@ -668,23 +551,33 @@ public class ChessBoard extends JFrame {
 							JSONArray row = map.getJSONArray(i);
 							for (int j = 0; j < row.length(); j++) {
 								squares[i][j].setText(row.getString(j));
-								//squares[i][j].paintImmediately(squares[i][j].getVisibleRect());
+								// squares[i][j].paintImmediately(squares[i][j].getVisibleRect());
 							}
 						}
 						// set the voting word
-						voteWord.setText(msg.getString("word"));
-						voteWord.paintImmediately(voteWord.getVisibleRect());
+						int voteResult = showMsg(msg.getString("word"));
+						JSONObject sendMsg = new JSONObject();
+						try {
+							output = new OutputStreamWriter(client.getOutputStream(), "UTF-8");
+							sendMsg.put("method", "vote");
+							sendMsg.put("value", voteResult);
+							output.write(sendMsg.toString() + "\n");
+							output.flush();
+						} catch (JSONException | IOException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
 						// is my turn
-		/*				JSONObject player = msg.getJSONObject("player");
-						if (player.getString("name").equals(name)) {
-							lblTurn.setText("Your turn.");
-							lblTurn.paintImmediately(lblTurn.getVisibleRect());
-							myTurn = true;
-						} else {
-							lblTurn.setText("Other player turns.");
-							lblTurn.paintImmediately(lblTurn.getVisibleRect());
-							myTurn = false;
-						}*/
+						/*
+						 * JSONObject player = msg.getJSONObject("player"); if
+						 * (player.getString("name").equals(name)) {
+						 * lblTurn.setText("Your turn.");
+						 * lblTurn.paintImmediately(lblTurn.getVisibleRect());
+						 * myTurn = true; } else {
+						 * lblTurn.setText("Other player turns.");
+						 * lblTurn.paintImmediately(lblTurn.getVisibleRect());
+						 * myTurn = false; }
+						 */
 						break;
 					}
 					case "update vote": {

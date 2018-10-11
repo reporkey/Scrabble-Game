@@ -98,4 +98,7 @@ public class Player {
 	public String getName() {
 		return name;
 	}
+	public String getPath() {
+		return this.path;
+	}
 }

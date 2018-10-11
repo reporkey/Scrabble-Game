@@ -10,6 +10,7 @@ import java.awt.event.*;
 import java.awt.EventQueue;
 
 import javax.swing.border.EmptyBorder;
+import javax.swing.text.Position;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -33,31 +34,32 @@ public class Room extends JFrame {
 	private static String name;
 	private String path;
 	private int xx, xy;
-	private int randomNum;
 	private Socket client;
-	private static MyArrayList<Player> potentialPlayers = new MyArrayList<Player>();	// not include self
+	private static MyArrayList<Player> potentialPlayers = new MyArrayList<Player>(); // not include self
 	private static MyArrayList<Player> invitedPlayers = new MyArrayList<Player>();
 	private static MyArrayList<Player> players = new MyArrayList<Player>();
-	private static JPanel panelPlayer2, panelPlayer3, panelPlayer4, panelPlayer5, panelPlayer6, panelPlayer7;
-	private static JLabel R7, R2, R3, R4, R5, R6, profile, I2, I3, I4, I5, I6, I7;
+	private static JPanel panelPlayer2, panelPlayer3, panelPlayer4, panelPlayer5, panelPlayer6, panelPlayer7, panel_2;
+	private static JLabel profile, I2, I3, I4, I5, I6, I7;
 	private static JLabel P2, P3, P4, P5, P6, P7;
+	private JList<String> playerList;
+	private BufferedReader input;
 
 	public Room(String name, Socket client, String path) throws JSONException {
 		this.client = client;
 		this.name = name;
 		this.path = path;
-		
+
 		// init listener
 		guiInitialize();
-		
-		Listener listener = new Listener();		
+
+		Listener listener = new Listener();
 		listener.start();
 	}
 
 	// Room GUI init
 	private void guiInitialize() throws JSONException {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 719, 358);
+		setBounds(100, 100, 713, 499);
 		contentPane = new JPanel();
 		contentPane.addMouseMotionListener(new MouseMotionAdapter() {
 			@Override
@@ -101,11 +103,18 @@ public class Room extends JFrame {
 		lblScrabble.setBounds(18, 14, 121, 31);
 		panel_1.add(lblScrabble);
 
-		JPanel panel_2 = new JPanel();
+		panel_2 = new JPanel();
 		panel_2.setBackground(new Color(71, 120, 197));
-		panel_2.setBounds(0, 40, 190, 296);
+		panel_2.setBounds(0, 40, 190, 439);
 		contentPane.add(panel_2);
 		panel_2.setLayout(null);
+
+		playerList = new JList();
+		playerList.setBackground(new Color(71, 120, 197));
+		playerList.setForeground(Color.WHITE);
+		playerList.setFont(new Font("Lithos Pro", Font.PLAIN, 15));
+		playerList.setBounds(20, 222, 141, 132);
+		panel_2.add(playerList);
 
 		JPanel panel_3 = new JPanel();
 		panel_3.setBackground(new Color(120, 168, 252));
@@ -157,30 +166,25 @@ public class Room extends JFrame {
 
 		JPanel poolPanel = new JPanel();
 		poolPanel.setBackground(Color.WHITE);
-		poolPanel.setBounds(192, 40, 527, 296);
+		poolPanel.setBounds(186, 40, 529, 439);
 		contentPane.add(poolPanel);
 		poolPanel.setLayout(null);
 
 		panelPlayer2 = new JPanel();
 		panelPlayer2.setBackground(Color.WHITE);
-		panelPlayer2.setBounds(40, 34, 112, 103);
+		panelPlayer2.setBounds(40, 64, 112, 103);
 		poolPanel.add(panelPlayer2);
 		panelPlayer2.setLayout(null);
 		panelPlayer2.setVisible(false);
 
 		P2 = new JLabel("");
-		P2.setBounds(19, 71, 61, 16);
+		P2.setFont(new Font("Lucida Grande", Font.PLAIN, 14));
+		P2.setBounds(32, 81, 61, 16);
 		panelPlayer2.add(P2);
 
 		JCheckBox C1 = new JCheckBox("");
 		C1.setBounds(0, 0, 28, 23);
 		panelPlayer2.add(C1);
-
-		R2 = new JLabel("");
-		R2.setFont(new Font("Lithos Pro", Font.PLAIN, 13));
-		R2.setForeground(Color.RED);
-		R2.setBounds(29, 84, 61, 16);
-		panelPlayer2.add(R2);
 
 		I2 = new JLabel("");
 		I2.setBounds(22, 6, 84, 81);
@@ -188,24 +192,19 @@ public class Room extends JFrame {
 
 		panelPlayer5 = new JPanel();
 		panelPlayer5.setBackground(Color.WHITE);
-		panelPlayer5.setBounds(40, 163, 112, 106);
+		panelPlayer5.setBounds(40, 209, 112, 106);
 		poolPanel.add(panelPlayer5);
 		panelPlayer5.setLayout(null);
 		panelPlayer5.setVisible(false);
 
 		P5 = new JLabel("");
-		P5.setBounds(19, 71, 61, 16);
+		P5.setFont(new Font("Lucida Grande", Font.PLAIN, 14));
+		P5.setBounds(32, 81, 61, 16);
 		panelPlayer5.add(P5);
 
 		JCheckBox C4 = new JCheckBox("");
 		C4.setBounds(0, 0, 28, 23);
 		panelPlayer5.add(C4);
-
-		R5 = new JLabel("");
-		R5.setFont(new Font("Lithos Pro", Font.PLAIN, 13));
-		R5.setForeground(Color.RED);
-		R5.setBounds(29, 84, 61, 16);
-		panelPlayer5.add(R5);
 
 		I5 = new JLabel("");
 		I5.setBounds(22, 6, 84, 81);
@@ -213,24 +212,19 @@ public class Room extends JFrame {
 
 		panelPlayer6 = new JPanel();
 		panelPlayer6.setBackground(Color.WHITE);
-		panelPlayer6.setBounds(210, 163, 112, 106);
+		panelPlayer6.setBounds(210, 209, 112, 106);
 		poolPanel.add(panelPlayer6);
 		panelPlayer6.setLayout(null);
 		panelPlayer6.setVisible(false);
 
 		P6 = new JLabel("");
-		P6.setBounds(20, 71, 61, 16);
+		P6.setFont(new Font("Lucida Grande", Font.PLAIN, 14));
+		P6.setBounds(20, 81, 61, 16);
 		panelPlayer6.add(P6);
 
 		JCheckBox C5 = new JCheckBox("");
 		C5.setBounds(0, 2, 28, 23);
 		panelPlayer6.add(C5);
-
-		R6 = new JLabel("");
-		R6.setFont(new Font("Lithos Pro", Font.PLAIN, 13));
-		R6.setForeground(Color.RED);
-		R6.setBounds(29, 84, 61, 16);
-		panelPlayer6.add(R6);
 
 		I6 = new JLabel("");
 		I6.setBounds(20, 6, 84, 85);
@@ -238,24 +232,19 @@ public class Room extends JFrame {
 
 		panelPlayer7 = new JPanel();
 		panelPlayer7.setBackground(Color.WHITE);
-		panelPlayer7.setBounds(375, 163, 112, 106);
+		panelPlayer7.setBounds(375, 209, 112, 106);
 		poolPanel.add(panelPlayer7);
 		panelPlayer7.setLayout(null);
 		panelPlayer7.setVisible(false);
 
 		P7 = new JLabel("");
-		P7.setBounds(21, 71, 61, 16);
+		P7.setFont(new Font("Lucida Grande", Font.PLAIN, 14));
+		P7.setBounds(21, 81, 61, 16);
 		panelPlayer7.add(P7);
 
 		JCheckBox C6 = new JCheckBox("");
 		C6.setBounds(0, 0, 28, 23);
 		panelPlayer7.add(C6);
-
-		R7 = new JLabel("");
-		R7.setFont(new Font("Lithos Pro", Font.PLAIN, 13));
-		R7.setForeground(Color.RED);
-		R7.setBounds(29, 84, 61, 16);
-		panelPlayer7.add(R7);
 
 		I7 = new JLabel("");
 		I7.setBounds(21, 6, 84, 81);
@@ -263,24 +252,19 @@ public class Room extends JFrame {
 
 		panelPlayer4 = new JPanel();
 		panelPlayer4.setBackground(Color.WHITE);
-		panelPlayer4.setBounds(375, 34, 112, 107);
+		panelPlayer4.setBounds(375, 64, 112, 107);
 		poolPanel.add(panelPlayer4);
 		panelPlayer4.setLayout(null);
 		panelPlayer4.setVisible(false);
 
 		P4 = new JLabel("");
-		P4.setBounds(21, 71, 61, 16);
+		P4.setFont(new Font("Lucida Grande", Font.PLAIN, 14));
+		P4.setBounds(21, 81, 61, 16);
 		panelPlayer4.add(P4);
 
 		JCheckBox C3 = new JCheckBox("");
 		C3.setBounds(0, 0, 28, 23);
 		panelPlayer4.add(C3);
-
-		R4 = new JLabel("");
-		R4.setFont(new Font("Lithos Pro", Font.PLAIN, 13));
-		R4.setForeground(Color.RED);
-		R4.setBounds(29, 84, 61, 16);
-		panelPlayer4.add(R4);
 
 		I4 = new JLabel("");
 		I4.setBounds(21, 6, 84, 81);
@@ -288,95 +272,160 @@ public class Room extends JFrame {
 
 		panelPlayer3 = new JPanel();
 		panelPlayer3.setBackground(Color.WHITE);
-		panelPlayer3.setBounds(210, 34, 112, 106);
+		panelPlayer3.setBounds(210, 64, 112, 106);
 		poolPanel.add(panelPlayer3);
 		panelPlayer3.setLayout(null);
 		panelPlayer3.setVisible(false);
 
 		P3 = new JLabel("");
-		P3.setBounds(18, 71, 61, 16);
+		P3.setFont(new Font("Lucida Grande", Font.PLAIN, 14));
+		P3.setBounds(18, 81, 61, 16);
 		panelPlayer3.add(P3);
 
 		JCheckBox C2 = new JCheckBox("");
 		C2.setBounds(0, 0, 28, 23);
 		panelPlayer3.add(C2);
 
-		R3 = new JLabel("");
-		R3.setFont(new Font("Lithos Pro", Font.PLAIN, 13));
-		R3.setForeground(Color.RED);
-		R3.setBounds(28, 84, 61, 16);
-		panelPlayer3.add(R3);
-
 		I3 = new JLabel("");
 		I3.setBounds(22, 6, 84, 81);
 		panelPlayer3.add(I3);
-		
+
 		// Start the game, only the room host is able to.
-//		JButton btnNewButton = new JButton("Scrabble");
-//		btnNewButton.addActionListener(new ActionListener() {
-//			public void actionPerformed(ActionEvent e) {
-//				if (players.size() > 1) {
-//					JSONObject sendMsg = new JSONObject();
-//					try {
-//						Writer output = new OutputStreamWriter(client.getOutputStream(), "UTF-8");
-//						sendMsg.put("method", "start");
-//						output.write(sendMsg.toString() + "\n");
-//						output.flush();
-//						//System.exit(0);
-//					} catch (JSONException | IOException e1) {
-//						// TODO Auto-generated catch block
-//						e1.printStackTrace();
-//					}
-//				} else
-//					JOptionPane.showMessageDialog(null, "There are no enough player!", "Notice",
-//							JOptionPane.ERROR_MESSAGE);
-//			}
-//		});
-//		btnNewButton.setBounds(39, 209, 117, 29);
-//		panel_2.add(btnNewButton);
+		// JButton btnNewButton = new JButton("Scrabble");
+		// btnNewButton.addActionListener(new ActionListener() {
+		// public void actionPerformed(ActionEvent e) {
+		// if (players.size() > 1) {
+		// JSONObject sendMsg = new JSONObject();
+		// try {
+		// Writer output = new OutputStreamWriter(client.getOutputStream(),
+		// "UTF-8");
+		// sendMsg.put("method", "start");
+		// output.write(sendMsg.toString() + "\n");
+		// output.flush();
+		// //System.exit(0);
+		// } catch (JSONException | IOException e1) {
+		// // TODO Auto-generated catch block
+		// e1.printStackTrace();
+		// }
+		// } else
+		// JOptionPane.showMessageDialog(null, "There are no enough player!",
+		// "Notice",
+		// JOptionPane.ERROR_MESSAGE);
+		// }
+		// });
+		// btnNewButton.setBounds(39, 209, 117, 29);
+		// panel_2.add(btnNewButton);
+
 		
+		JLabel lblRoomPlayerList = new JLabel("Players in Room: ");
+		lblRoomPlayerList.setFont(new Font("Lithos Pro", Font.PLAIN, 16));
+		lblRoomPlayerList.setForeground(Color.WHITE);
+		lblRoomPlayerList.setBounds(10, 194, 157, 16);
+		panel_2.add(lblRoomPlayerList);
+
+		JButton btnScrabble = new JButton("Scrabble");
+		btnScrabble.setBounds(116, 392, 117, 29);
+		poolPanel.add(btnScrabble);
+
 		JButton btnInvite = new JButton("Invite");
-		btnInvite.setBounds(39, 250, 117, 29);
-		panel_2.add(btnInvite);
+		btnInvite.setBounds(246, 392, 117, 29);
+		poolPanel.add(btnInvite);
+
+		JButton btnLeave = new JButton("Leave Room");
+		btnLeave.setBounds(375, 392, 117, 29);
+		poolPanel.add(btnLeave);
+
+		btnScrabble.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (playerList.getModel().getSize() != 0) {				
+					JSONObject reply = new JSONObject();
+					try {
+						reply.put("method", "start game");
+						Writer output = new OutputStreamWriter(client.getOutputStream(), "UTF-8");
+						output.write(reply + "\n");
+						output.flush();
+					} catch (JSONException | IOException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+				}else{
+					JOptionPane.showMessageDialog(null, "Sorry..there is no player in the room..", "Join the room!",
+							JOptionPane.WARNING_MESSAGE);
+				}
+				
+			}
+		});
 		
-		buttonBehavior(btnInvite, C1, C2, C3, C4, C5, C6);
-	}
-	
-	private void buttonBehavior(JButton btnInvite, JCheckBox C1, JCheckBox C2, JCheckBox C3, JCheckBox C4, JCheckBox C5, JCheckBox C6) {
 		btnInvite.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				JSONObject sendMsg = new JSONObject();
 				MyArrayList<Player> temp = new MyArrayList<Player>();
 				try {
 					Writer output = new OutputStreamWriter(client.getOutputStream(), "UTF-8");
-					if (C1.isSelected()) {
-						temp.add(potentialPlayers.get(0));
-						R2.setText("WAIT");
-					}
-					if (C2.isSelected()) {
-						temp.add(potentialPlayers.get(1));
-						R3.setText("WAIT");
-					}
-					if (C3.isSelected()) {
-						temp.add(potentialPlayers.get(2));
-						R4.setText("WAIT");
-					}
-					if (C4.isSelected()) {
-						temp.add(potentialPlayers.get(3));
-						R5.setText("WAIT");
-					}
-					if (C5.isSelected()) {
-						temp.add(potentialPlayers.get(4));
-						R6.setText("WAIT");
-					}
-					if (C6.isSelected()) {
-						temp.add(potentialPlayers.get(5));
-						R7.setText("WAIT");
-					}
-					sendMsg.put("method", "request invite");
-					sendMsg.put("players", temp.toJson());
-					output.write(sendMsg.toString() + "\n");
-					output.flush();
+					if (playerList.getModel().getSize() > 0) {
+						if (C1.isSelected()) {
+							int index = playerList.getNextMatch(potentialPlayers.get(0).getName(),0,Position.Bias.Forward);
+							if (index == -1){
+								temp.add(potentialPlayers.get(0));
+							}else{
+								JOptionPane.showMessageDialog(null, "This player already in the room!", "Check the room player list!",
+										JOptionPane.WARNING_MESSAGE);
+							}
+							
+						}
+						if (C2.isSelected()) {
+							int index = playerList.getNextMatch(potentialPlayers.get(1).getName(),0,Position.Bias.Forward);
+							if (index == -1){
+								temp.add(potentialPlayers.get(1));
+							}else{
+								JOptionPane.showMessageDialog(null, "This player already in the room!", "Check the room player list!",
+										JOptionPane.WARNING_MESSAGE);
+							}
+						}
+						if (C3.isSelected()) {
+							int index = playerList.getNextMatch(potentialPlayers.get(2).getName(),0,Position.Bias.Forward);
+							if (index == -1){
+								temp.add(potentialPlayers.get(2));
+							}else{
+								JOptionPane.showMessageDialog(null, "This player already in the room!", "Check the room player list!",
+										JOptionPane.WARNING_MESSAGE);
+							}
+						}
+						if (C4.isSelected()) {
+							int index = playerList.getNextMatch(potentialPlayers.get(3).getName(),0,Position.Bias.Forward);
+							if (index == -1){
+								temp.add(potentialPlayers.get(3));
+							}else{
+								JOptionPane.showMessageDialog(null, "This player already in the room!", "Check the room player list!",
+										JOptionPane.WARNING_MESSAGE);
+							}
+						}
+						if (C5.isSelected()) {
+							int index = playerList.getNextMatch(potentialPlayers.get(4).getName(),0,Position.Bias.Forward);
+							if (index == -1){
+								temp.add(potentialPlayers.get(4));
+							}else{
+								JOptionPane.showMessageDialog(null, "This player already in the room!", "Check the room player list!",
+										JOptionPane.WARNING_MESSAGE);
+							}
+						}
+						if (C6.isSelected()) {
+							int index = playerList.getNextMatch(potentialPlayers.get(5).getName(),0,Position.Bias.Forward);
+							if (index == -1){
+								temp.add(potentialPlayers.get(5));
+							}else{
+								JOptionPane.showMessageDialog(null, "This player already in the room!", "Check the room player list!",
+										JOptionPane.WARNING_MESSAGE);
+							}
+						}
+						sendMsg.put("method", "request invite");
+						sendMsg.put("players", temp.toJson());
+						output.write(sendMsg.toString() + "\n");
+						output.flush();
+					}else{
+						JOptionPane.showMessageDialog(null, "Sorry..there is no player in the room..", "Join the room!",
+								JOptionPane.WARNING_MESSAGE);
+					}				
 				} catch (UnsupportedEncodingException e1) {
 					e1.printStackTrace();
 				} catch (IOException e1) {
@@ -436,51 +485,16 @@ public class Room extends JFrame {
 		}
 	}
 
-	public static int showMsg(String invitor) {
+	private static int showMsg(String invitor) {
 		String[] buttons = { "No", "YES" };
 		// response =0 is no, =1 is yes
 		int response = 0;
-		String mgs = "Hi," + name +", a invite message from" + invitor;
+		String mgs = "Hi," + name + ", a invite message from" + invitor;
 		response = JOptionPane.showOptionDialog(null, "Do you want to play a game?", mgs, JOptionPane.DEFAULT_OPTION,
 				JOptionPane.QUESTION_MESSAGE, null, buttons, buttons[1]);
 		return response;
 	}
 
-	public static void updateInviteStatus(MyArrayList<Player> players) {
-		for (Player player : players) {
-			try {
-				if (player.getObj().getString("name").equals(P2.getText())) {
-					R2.setText("READY");
-					R2.paintImmediately(R2.getVisibleRect());
-				}
-				if (player.getObj().getString("name").equals(P3.getText())) {
-					R3.setText("READY");
-					R3.paintImmediately(R3.getVisibleRect());
-				}
-				if (player.getObj().getString("name").equals(P4.getText())) {
-					R4.setText("READY");
-					R4.paintImmediately(R4.getVisibleRect());
-				}
-				if (player.getObj().getString("name").equals(P5.getText())) {
-					R5.setText("READY");
-					R5.paintImmediately(R5.getVisibleRect());
-				}
-				if (player.getObj().getString("name").equals(P6.getText())) {
-					R6.setText("READY");
-					R6.paintImmediately(R6.getVisibleRect());
-				}
-				if (player.getObj().getString("name").equals(P7.getText())) {
-					R7.setText("READY");
-					R7.paintImmediately(R7.getVisibleRect());
-				}
-			} catch (JSONException e) {
-				e.printStackTrace();
-			}
-		}
-
-	}
-	
-	
 	// listener subclass \ thread
 	public class Listener extends Thread {
 
@@ -490,62 +504,80 @@ public class Room extends JFrame {
 
 			try {
 				Writer output = new OutputStreamWriter(client.getOutputStream(), "UTF-8");
-				BufferedReader input = new BufferedReader(new InputStreamReader(client.getInputStream(), "UTF-8"));
+				input = new BufferedReader(new InputStreamReader(client.getInputStream(), "UTF-8"));
 				while ((msgStr = input.readLine()) != null) {
 					JSONObject msg = new JSONObject(msgStr);
 					switch (msg.getString("method")) {
-						case "join game": {
-							JSONArray arr = msg.getJSONArray("players");
-							potentialPlayers = new MyArrayList<Player>();
-							for (int i = 0; i < arr.length(); i++) {
-								Player player = new Player(arr.getJSONObject(i));
-								if (!player.getName().equals(name)) {
-									potentialPlayers.add(player);
-								}
+					case "join game": {
+						JSONArray arr = msg.getJSONArray("potentialPlayers");
+						potentialPlayers = new MyArrayList<Player>();
+						for (int i = 0; i < arr.length(); i++) {
+							String getName = arr.getJSONObject(i).getString("name");
+							String path = arr.getJSONObject(i).getString("path");
+							Player player = new Player(getName, path);
+							if (!getName.equals(name)) {
+								potentialPlayers.add(player);
 							}
-							Room.updatePotentialPlayersNumber(potentialPlayers);
-							break;
 						}
-						case "request invite": {
-							String invitor = msg.getString("from");
-							if (!invitor.equals(name)) {
-								int choose = Room.showMsg(invitor);
-								JSONObject reply = new JSONObject();
-								reply.put("method", "response invite");
-								reply.put("value", choose);
-								output.write(reply + "\n");
-								output.flush();
-							}
-							break;
-						}
-						case "response invite": {
-							JSONArray arr = msg.getJSONArray("players");
-							players = new MyArrayList<Player>();
-							for (int i = 0; i < arr.length(); i++) {
-								Player player = new Player(arr.getJSONObject(i));
+						JSONArray arr2 = msg.getJSONArray("players");
+						players = new MyArrayList<Player>();
+						if (arr2.length() > 0) {
+							String[] model = new String[10];
+							for (int i = 0; i < arr2.length(); i++) {
+								Player player = new Player(arr2.getJSONObject(i));
 								players.add(player);
+								model[i] = player.getName();
 							}
-							updateInviteStatus(players);
-							break;
+							playerList.setListData(model);
 						}
-						case "turn": {
-							System.out.println("chessboard");
-							// is my turn
-							boolean myTurn = false;
-							JSONObject player = msg.getJSONObject("player");
-							if (player.getString("name").equals(name)) {
-								myTurn = true;
-							}else {
-								myTurn = false;
-							}
-							ChessBoard game = new ChessBoard(name, msg, client, myTurn);
-							System.out.println(msg);
-							game.setUndecorated(true);
-							game.setVisible(true);
-							game.setPlayerList();
-							contentPane.setVisible(false);
-							return;
+						Room.updatePotentialPlayersNumber(potentialPlayers);
+						break;
+					}
+					case "request invite": {
+						String invitor = msg.getString("from");
+						if (!invitor.equals(name)) {
+							int choose = showMsg(invitor);
+							JSONObject reply = new JSONObject();
+							reply.put("method", "response invite");
+							reply.put("value", choose);
+							output.write(reply + "\n");
+							output.flush();
 						}
+						break;
+					}
+					case "response invite": {
+						JSONArray arr = msg.getJSONArray("players");
+						players = new MyArrayList<Player>();
+						String[] model = new String[10];
+						for (int i = 0; i < arr.length(); i++) {
+							Player player = new Player(arr.getJSONObject(i));
+							players.add(player);
+							model[i] = player.getName();
+						}
+						playerList.setListData(model);
+						break;
+					}
+					case "turn": {
+						System.out.println("chessboard");
+						// is my turn
+						boolean myTurn = false;
+						JSONObject player = msg.getJSONObject("player");
+						if (player.getString("name").equals(name)) {
+							myTurn = true;
+						} else {
+							myTurn = false;
+						}
+						instrcution frame = new instrcution();
+						frame.setVisible(true);
+						frame.setTitle("Instructions");	
+						ChessBoard game = new ChessBoard(name, msg, client, myTurn);
+						System.out.println(msg);
+						game.setUndecorated(true);
+						game.setVisible(true);
+						game.setPlayerList();
+						contentPane.setVisible(false);
+						return;
+					}
 					}
 				}
 			} catch (JSONException | IOException e) {

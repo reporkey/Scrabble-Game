@@ -69,7 +69,8 @@ public class World {
 					Player player = new Player(client, msg);
 					potentialPlayers.add(player);
 					send.put("method", "join game");
-					send.put("players", potentialPlayers.toJson());
+					send.put("potentialPlayers", potentialPlayers.toJson());
+					send.put("players", players.toJson());
 					System.out.println("Join game: " + player.getName());
 					broadcast(send, potentialPlayers);
 					break;
@@ -92,9 +93,11 @@ public class World {
 					String name = "";
 					for (Player player : potentialPlayers) {
 						if (ip.equals(player.getIp()) && port == player.getPort()) {
-							name = player.getName();
-							player.setAccept(1);
-							players.add(player);
+							name = player.getName();							
+							if(!players.contains(player)){
+								player.setAccept(1);
+								players.add(player);
+							}								
 							break;
 						}
 					}
@@ -126,12 +129,12 @@ public class World {
 					}
 					send.put("method", "response invite");
 					send.put("players", players.toJson());
-					broadcast(send, players);
+					broadcast(send, potentialPlayers);
 					System.out.print("Request responce: from: " + name + " value: " + msg.getInt("value"));
 					break;
 				}
 
-				case "start": {
+				case "start game": {
 					start = true;
 				}
 
@@ -202,8 +205,7 @@ public class World {
 				 * { accept++; } }
 				 */
 				if (accept >= players.size() && accept > 1) {
-					// if (start)
-					break;
+					if (start) break;
 				}
 			}
 
@@ -215,12 +217,6 @@ public class World {
 			while (true) {
 				// iterate player's turn
 				for (Player player : players) {
-					
-					// reset word
-					word = null;
-					for (Player temp : players) {
-						temp.setVote(-1);
-					}
 					
 					// if all plays pass
 					System.out.println("pass: " + pass + ", player size: " + players.size());
@@ -299,6 +295,9 @@ public class World {
 							}
 						}
 						if (vote == -1 || vote == players.size()) {
+							for (Player temp2 : players) {
+								temp2.setVote(-1);
+							}
 							break;
 						}
 					}
@@ -333,6 +332,9 @@ public class World {
 						}
 
 					}*/
+
+					// reset
+					word = null;
 				}
 			}
 		}

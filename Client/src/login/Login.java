@@ -1,11 +1,12 @@
 package login;
 
+import room.Room;
+
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 import org.json.*;
 
-import room.Room;
 import utilities.MyArrayList;
 import utilities.Player;
 
@@ -129,13 +130,10 @@ public class Login extends JFrame {
 				// send the user name to server
 				Boolean validName;
 				try {
-					if (username.getText().toString().equals("")) {
-						return;
-					}
 					Random rand = new Random();
 					int randomNum = rand.nextInt((10 - 1) + 1) + 1;
 					path = "/img/h" + randomNum + ".png";
-					validName = sendName(username.getText().toString(), path);
+					validName = sendName(username.getText().toString(),path);
 					// pass the text of user name to room				
 					Room r = new Room(username.getText(), server,path);
 					r.setUndecorated(true);
@@ -143,7 +141,8 @@ public class Login extends JFrame {
 					dispose();
 				} catch (JSONException error) {
 					error.printStackTrace();
-				}
+				} 											
+				
 			}
 		});
 	}
