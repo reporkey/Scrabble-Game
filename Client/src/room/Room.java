@@ -7,7 +7,6 @@ import java.io.*;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.awt.EventQueue;
 
 import javax.swing.border.EmptyBorder;
 import javax.swing.text.Position;
@@ -15,8 +14,6 @@ import javax.swing.text.Position;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.awt.Color;
 
 import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.ColumnSpec;
@@ -44,10 +41,9 @@ public class Room extends JFrame {
 	private JList<String> playerList;
 	private BufferedReader input;
 
-	public Room(Socket client, long id, String name) throws JSONException {
+	public Room(Socket client, String name) throws JSONException {
 		this.client = client;
 		this.name = name;
-		this.id = id;
 
 		// init listener
 		guiInitialize();
@@ -407,6 +403,25 @@ public class Room extends JFrame {
 		panelPlayer5.setVisible(false);
 		panelPlayer6.setVisible(false);
 		panelPlayer7.setVisible(false);
+		
+		switch (temp.size()) {
+		case 1: {
+			((JCheckBox)panelPlayer7.getComponent(1)).setSelected(false);
+		}
+		case 2: {
+			((JCheckBox)panelPlayer6.getComponent(1)).setSelected(false);
+		}
+		case 3: {
+			((JCheckBox)panelPlayer5.getComponent(1)).setSelected(false);
+		}
+		case 4: {
+			((JCheckBox)panelPlayer4.getComponent(1)).setSelected(false);
+		}
+		case 5: {
+			((JCheckBox)panelPlayer3.getComponent(1)).setSelected(false);
+			break;
+		}
+		}
 		try {
 			switch (temp.size()) {
 			case 6: {
@@ -440,8 +455,6 @@ public class Room extends JFrame {
 				I2.setIcon(new ImageIcon(Room.class.getResource(temp.get(0).getObj().getString("path"))));
 				break;
 			}
-			default:
-//				System.out.println("Player size: " + potentialPlayers.size());
 			}
 		} catch (JSONException e) {
 			e.printStackTrace();
@@ -474,6 +487,7 @@ public class Room extends JFrame {
 					case "join game": {
 						Player player = new Player(msg.getJSONObject("player"));
 						profile.setIcon(new ImageIcon(Room.class.getResource(player.getPath())));
+						id = player.getId(); 
 						break;
 					}
 					case "request invite": {
@@ -502,7 +516,7 @@ public class Room extends JFrame {
 						}
 						Room.updatePotentialPlayersNumber(potentialPlayers);
 						
-						// update players; if not include self, set only self
+						// update players
 						arr = msg.getJSONArray("players");
 						players = new MyArrayList<Player>();
 						String[] playersName = new String[10];

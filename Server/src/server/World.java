@@ -84,13 +84,14 @@ public class World {
 
 				case "request invite": {
 					// add invited player to invited players
+					System.out.println(msg);
 					JSONArray arr = msg.getJSONArray("players");
 					ArrayList<Integer> toMoveIndex = new ArrayList<Integer>();
 					for (int i = 0; i < arr.length(); i++) {
 						JSONObject invited = arr.getJSONObject(i);
 						long id = invited.getLong("id");
 						for (int j=0; j<potentialPlayers.size(); j++) {
-//							System.out.println("invited players id " + id + " || potential id " + potentialPlayers.get(i).getId());
+							System.out.println("invited players id " + id + " || potential id " + potentialPlayers.get(i).getId());
 							Player player = potentialPlayers.get(j);
 							if (id == player.getId()) {
 								invitedPlayers.add(player);
@@ -196,10 +197,8 @@ public class World {
 				}
 
 				case "start game": {
-					int accept = 0;
 					for (Player player : players) {
 						if (player.getAccept() == 1) {
-							accept++;
 						}
 					}
 					start = true;
@@ -235,7 +234,7 @@ public class World {
 						}
 					}
 					System.out.println("Vote: " + name + "voted " + msg.getInt("value"));
-					send.put("method", "update vote");
+					send.put("method", "update");
 					send.put("players", players.toJson());
 					broadcast(send, players);
 					break;
@@ -250,11 +249,47 @@ public class World {
 			e.printStackTrace();
 		}
 	}
+	
+	public class Update implements Runnable {
+		public void run() {
+
+			while (true) {
+				
+				try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				
+				// update each second
+				JSONObject send = new JSONObject();
+				try {
+					send.put("method", "update");
+					if (map.length() >= 1) {
+						send.put("map", map);
+					}
+					send.put("potential players", potentialPlayers);
+					send.put("players", players.toJson());
+					broadcast(send, players);
+					broadcast(send, potentialPlayers);
+				} catch (JSONException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			
+		}
+	}
 
 	public class Game implements Runnable {
 
 		public void run() {
 
+			// Start a new thread to keep update
+			Thread update = new Thread(new Update());
+			update.start();
+						
 			// Check accept
 			while (!start) {
 				try {
@@ -267,9 +302,9 @@ public class World {
 			System.out.println("Game start!!!!!!!!");
 			System.out.println();
 			for (Player player : players) {
-				System.out.println(player.getName());
+				System.out.println("Players in game: " + player.getName());
 			}
-
+			
 			// game begin
 			while (true) {
 				// iterate player's turn
@@ -290,13 +325,14 @@ public class World {
 					}
 					System.out.println("SERVER:: This is " + player.getName() + "'s turn.");
 
-					// send whose turn
 					JSONObject send = new JSONObject();
 					try {
+						// send whose turn
 						send.put("method", "turn");
 						send.put("map", map);
 						send.put("player", player.getObj());
 						send.put("players", players.toJson());
+						
 					} catch (JSONException e1) {
 						// TODO Auto-generated catch block
 						e1.printStackTrace();
@@ -324,7 +360,6 @@ public class World {
 						try {
 							send.put("method", "vote");
 							send.put("word", word);
-							send.put("map", map);
 							send.put("player", player.getObj());
 							MyArrayList<Player> temp = new MyArrayList<Player>();
 							for (Player each : players) {
@@ -404,18 +439,83 @@ public class World {
 	}
 
 	// methods
-
 	public void broadcast(JSONObject msg, MyArrayList players) {
-
-		for (Object player : players) {
+		
+//		// check connection of potential players
+//		ArrayList<Integer> toRemove = new ArrayList<Integer>();
+//		for (int i = 0; i < potentialPlayers.size(); i++) {
+//			Player player = potentialPlayers.get(i);
+//			try {
+//				BufferedWriter out = new BufferedWriter(
+//						new OutputStreamWriter(player.getSocket().getOutputStream(), "UTF-8"));
+//				out.write(msg.toString() + "\n");
+//				out.flush();
+//			} catch (SocketException e1) {
+//				// client connection lost
+//				// kick the player out
+//				toRemove.add(i);
+//				
+//				System.out.println("player " + player.getName() + " lost connection!");
+//			} catch (IOException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+//		}
+//		// remove them from potential players
+//		for (int i=toRemove.size()-1; i>=0; i--) {
+//			potentialPlayers.remove((int)toRemove.get(i));
+//		}
+//		
+//		// check connection of invited players
+//		toRemove = new ArrayList<Integer>();
+//		for (int i = 0; i < invitedPlayers.size(); i++) {
+//			Player player = invitedPlayers.get(i);
+//			try {
+//				BufferedWriter out = new BufferedWriter(
+//						new OutputStreamWriter(player.getSocket().getOutputStream(), "UTF-8"));
+//				out.write(msg.toString() + "\n");
+//				out.flush();
+//			} catch (SocketException e1) {
+//				// client connection lost
+//				// kick the player out
+//				toRemove.add(i);
+//				
+//				System.out.println("player " + player.getName() + " lost connection!");
+//			} catch (IOException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+//		}
+//		// remove them from invited players
+//		for (int i=toRemove.size()-1; i>=0; i--) {
+//			invitedPlayers.remove((int)toRemove.get(i));
+//		}
+		
+		// check connection of players
+		ArrayList<Integer> toRemove = new ArrayList<Integer>();
+		for (int i = 0; i < players.size(); i++) {
+			Object player = players.get(i);
 			try {
 				BufferedWriter out = new BufferedWriter(
 						new OutputStreamWriter(((Player) player).getSocket().getOutputStream(), "UTF-8"));
 				out.write(msg.toString() + "\n");
 				out.flush();
+			} catch (SocketException e1) {
+				// client connection lost
+				// kick the player out
+				toRemove.add(i);
+	
+				
+				
+				System.out.println("player " + ((Player)player).getName() + " lost connection!");
 			} catch (IOException e) {
+				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+		}
+		// remove them from list
+		for (int i=0; i<toRemove.size(); i++) {
+			players.remove((int)toRemove.get(i));
 		}
 	}
 

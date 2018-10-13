@@ -300,19 +300,36 @@ public class ChessBoard extends JFrame implements ActionListener, KeyListener {
 		for (int i = 0; i < 20; i++) {
 			for (int j = 0; j < 20; j++) {
 				if (source == squares[i][j]) {
-					System.out.println("this: " + i + ", " + j + "; current: " + lasti + ", " + lastj);
-					if (lasti != -1 && lastj != -1 && !squares[i][j].getText().equals("")) {
+					System.out.println("this: " + i + ", " + j + "; last: " + lasti + ", " + lastj);
+					// if this is the first step
+					if (lasti == -1 && lastj == -1) {
+						if (!squares[i][j].getText().equals("")) {
+							System.out.println("not empty");
+							return;
+						}
+					}else {
+						// this is not the first step
+						// and same spot as last step
 						if (lasti == i && lastj == j) {
 							System.out.println("same spot");
 						}else {
-							System.out.println("not same spot");
-							if (!squares[i][j].getText().equals("")) {
-								System.out.println("not empty");
-								return;
+							// not same spot as last step
+							// if empty, remove what player typed
+							if (squares[i][j].getText().equals("")) {
+								System.out.println("not same spot");
+								if (!squares[i][j].getText().equals("")) {
+									System.out.println("not empty");
+									return;
+								}else {
+									squares[lasti][lastj].setText("");
+								}
 							}else {
-								squares[lasti][lastj].setText("");
+								// if not empty, do nothing
+								return;
 							}
 						}
+						// and this spot is not empty
+						
 					}
 						
 					if (e.getKeyCode() >= 65 && e.getKeyCode() <= 90) {
@@ -368,10 +385,8 @@ public class ChessBoard extends JFrame implements ActionListener, KeyListener {
 	public void keyTyped(KeyEvent e) {
 	}
 
-	// word confirm
 	@Override
 	public void keyReleased(KeyEvent e) {
-		Object source = e.getSource();
 	}
 
 	// is valid if no character placed before
@@ -522,18 +537,25 @@ public class ChessBoard extends JFrame implements ActionListener, KeyListener {
 				Writer output = new OutputStreamWriter(client.getOutputStream(), "UTF-8");
 				BufferedReader input = new BufferedReader(new InputStreamReader(client.getInputStream(), "UTF-8"));
 				while ((msgStr = input.readLine()) != null) {
-
 					JSONObject msg = new JSONObject(msgStr);
+					
 					switch (msg.getString("method")) {
+					
 					case "turn": {
+						// is my turn
+						if (msg.getJSONObject("player").getString("name").equals(name)) {
+							myTurn = true;
+						} else {
+							myTurn = false;
+						}
 						// update map
-						System.out.println("Turn");
-						JSONArray map = msg.getJSONArray("map");
-						for (int i = 0; i < map.length(); i++) {
-							JSONArray row = map.getJSONArray(i);
-							for (int j = 0; j < row.length(); j++) {
-								squares[i][j].setText(row.getString(j));
-								//squares[i][j].paintImmediately(squares[i][j].getVisibleRect());
+						if (msg.has("map")) {
+							JSONArray map = msg.getJSONArray("map");
+							for (int i = 0; i < map.length(); i++) {
+								JSONArray row = map.getJSONArray(i);
+								for (int j = 0; j < row.length(); j++) {
+									squares[i][j].setText(row.getString(j));
+								}
 							}
 						}
 						// update player
@@ -543,27 +565,11 @@ public class ChessBoard extends JFrame implements ActionListener, KeyListener {
 							Player player = new Player(arr.getJSONObject(i));
 							players.add(player);
 						}
-						// is my turn
-						JSONObject player = msg.getJSONObject("player");
-						if (player.getString("name").equals(name)) {
-							myTurn = true;
-						} else {
-							myTurn = false;
-						}
 						setPlayerList();
 						break;
 					}
 					case "vote": {
 						System.out.println("start vote");
-						// update map
-						JSONArray map = msg.getJSONArray("map");
-						for (int i = 0; i < map.length(); i++) {
-							JSONArray row = map.getJSONArray(i);
-							for (int j = 0; j < row.length(); j++) {
-								squares[i][j].setText(row.getString(j));
-								// squares[i][j].paintImmediately(squares[i][j].getVisibleRect());
-							}
-						}
 						// set the voting word
 						int voteResult = showMsg(msg.getString("word"));
 						JSONObject sendMsg = new JSONObject();
@@ -577,21 +583,23 @@ public class ChessBoard extends JFrame implements ActionListener, KeyListener {
 							// TODO Auto-generated catch block
 							e1.printStackTrace();
 						}
-						// is my turn
-						/*
-						 * JSONObject player = msg.getJSONObject("player"); if
-						 * (player.getString("name").equals(name)) {
-						 * lblTurn.setText("Your turn.");
-						 * lblTurn.paintImmediately(lblTurn.getVisibleRect());
-						 * myTurn = true; } else {
-						 * lblTurn.setText("Other player turns.");
-						 * lblTurn.paintImmediately(lblTurn.getVisibleRect());
-						 * myTurn = false; }
-						 */
 						break;
 					}
-					case "update vote": {
-						System.out.println("update vote");
+					case "update": {
+						// if is my turn, skip
+						if (myTurn) {
+							break;
+						}
+						// update map
+						if (msg.has("map")) {
+							JSONArray map = msg.getJSONArray("map");
+							for (int i = 0; i < map.length(); i++) {
+								JSONArray row = map.getJSONArray(i);
+								for (int j = 0; j < row.length(); j++) {
+									squares[i][j].setText(row.getString(j));
+								}
+							}
+						}
 						// update player
 						JSONArray arr = msg.getJSONArray("players");
 						players = new MyArrayList<Player>();

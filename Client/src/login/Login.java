@@ -30,10 +30,7 @@ public class Login extends JFrame {
 	private JPanel contentPane;
 	private JTextField username;
 	private int xx, xy;
-	private Socket server;
-
 	public void setSocket (Socket server) {
-		this.server = server;
 		
 	}
 	
@@ -117,17 +114,15 @@ public class Login extends JFrame {
 				try {
 					Writer output = new OutputStreamWriter(server.getOutputStream(), "UTF-8");
 					// initial ID
-					long id  = System.currentTimeMillis();
 					String name = username.getText().toString();
 					JSONObject send = new JSONObject();
 					send.put("method", "join game");
-					send.put("id", id);
 					send.put("name", name);
 					output.write(send.toString() + "\n");
 					output.flush();
 					
 					// pass the text of user name to room				
-					Room r = new Room(server, id, name);
+					Room r = new Room(server, name);
 					r.setUndecorated(true);
 					r.setVisible(true);
 					dispose();
