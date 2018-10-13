@@ -7,6 +7,7 @@ public class Main {
 	private static String serverIp;
 	private static int serverPort;
 	private static Socket server;
+	
 
 	public static void main(String[] args){
 		if (args.length == 2) {

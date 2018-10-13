@@ -52,7 +52,7 @@ public class GameOver extends JFrame {
 	private void guiInitialize(String name, MyArrayList<Player> players) {
 		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 360, 784);
+		setBounds(100, 100, 363, 698);
 		contentPane = new JPanel();
 		contentPane.setBackground(Color.WHITE);
 		contentPane.addMouseMotionListener(new MouseMotionAdapter() {
@@ -77,12 +77,12 @@ public class GameOver extends JFrame {
 		JLabel lblNewLabel = new JLabel("");
 		lblNewLabel.setBackground(Color.WHITE);
 		lblNewLabel.setIcon(new ImageIcon(Instrcution.class.getResource("/img/gameover.png")));
-		lblNewLabel.setBounds(117, 0, 128, 146);
+		lblNewLabel.setBounds(117, 0, 128, 128);
 		contentPane.add(lblNewLabel);
 		
 		JPanel panel = new JPanel();
 		panel.setBackground(Color.WHITE);
-		panel.setBounds(0, 226, 360, 430);
+		panel.setBounds(0, 211, 360, 382);
 		contentPane.add(panel);
 		panel.setLayout(null);
 		
@@ -95,11 +95,11 @@ public class GameOver extends JFrame {
 		panel.add(lblImg2);
 		
 		lblImg3 = new JLabel("");
-		lblImg3.setBounds(56, 292, 69, 69);
+		lblImg3.setBounds(56, 248, 69, 69);
 		panel.add(lblImg3);
 		
 		lblImg4 = new JLabel("");
-		lblImg4.setBounds(228, 292, 69, 69);
+		lblImg4.setBounds(228, 248, 69, 69);
 		panel.add(lblImg4);
 		
 		P1 = new JLabel("");
@@ -111,11 +111,11 @@ public class GameOver extends JFrame {
 		panel.add(P2);
 		
 		P3 = new JLabel("");
-		P3.setBounds(56, 253, 108, 27);
+		P3.setBounds(56, 209, 108, 27);
 		panel.add(P3);
 		
 		P4 = new JLabel("");
-		P4.setBounds(228, 253, 108, 27);
+		P4.setBounds(228, 209, 108, 27);
 		panel.add(P4);
 		
 		scoreP1 = new JLabel("");
@@ -127,11 +127,11 @@ public class GameOver extends JFrame {
 		panel.add(scoreP2);
 		
 		scoreP3 = new JLabel("");
-		scoreP3.setBounds(56, 373, 61, 16);
+		scoreP3.setBounds(56, 340, 61, 16);
 		panel.add(scoreP3);
 		
 		scoreP4 = new JLabel("");
-		scoreP4.setBounds(228, 373, 61, 16);
+		scoreP4.setBounds(228, 340, 61, 16);
 		panel.add(scoreP4);
 		
 		displayWinner(panel, players, name);
@@ -143,10 +143,10 @@ public class GameOver extends JFrame {
 		btnOk.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				System.exit(0);
+				dispose();
 			}
 		});
-		btnOk.setBounds(117, 680, 117, 54);
+		btnOk.setBounds(117, 605, 117, 54);
 		contentPane.add(btnOk);
 	}
 	
@@ -209,7 +209,7 @@ public class GameOver extends JFrame {
 		}
 		
 		winning = new JLabel("");
-		winning.setBounds(147, 140, 64, 72);
+		winning.setBounds(147, 130, 64, 72);
 		winning.setIcon(new ImageIcon(Instrcution.class.getResource("/img/win.png")));
 		contentPane.add(winning);
 		

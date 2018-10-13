@@ -2,6 +2,8 @@ package room;
 
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
@@ -18,7 +20,7 @@ public class Instrcution extends JFrame {
 	 * Create the frame.
 	 */
 	public Instrcution() {
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		setBounds(100, 100, 343, 362);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -35,5 +37,6 @@ public class Instrcution extends JFrame {
 		lblNewLabel.setIcon(new ImageIcon(Instrcution.class.getResource("/img/instruction.jpg")));
 		lblNewLabel.setBounds(0, 0, 345, 340);
 		panel.add(lblNewLabel);
+
 	}
 }

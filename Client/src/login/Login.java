@@ -1,6 +1,7 @@
 package login;
 
 import room.Room;
+import utilities.Player;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -13,13 +14,16 @@ import javax.swing.UIManager;
 import java.awt.Font;
 import javax.swing.JTextField;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.ImageIcon;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseMotionAdapter;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
@@ -30,19 +34,19 @@ public class Login extends JFrame {
 	private JPanel contentPane;
 	private JTextField username;
 	private int xx, xy;
-	public void setSocket (Socket server) {
-		
+	public void setSocket(Socket server) {
+
 	}
-	
+
 	// Create the frame.
 	public Login(Socket server) {
-		
+
 		setSocket(server);
 		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 686, 426);
 		contentPane = new JPanel();
-		
+
 		// set panel
 		contentPane.setBackground(Color.WHITE);
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -61,7 +65,7 @@ public class Login extends JFrame {
 		username.setBounds(371, 170, 271, 50);
 		contentPane.add(username);
 		username.setColumns(10);
-		
+
 		// set login button
 		JButton btnLogin = new JButton("Login");
 		btnLogin.setFont(new Font("Lucida Grande", Font.BOLD, 14));
@@ -105,27 +109,41 @@ public class Login extends JFrame {
 				xy = e.getY();
 			}
 		});
-		
+
 		// set login button
 		btnLogin.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				
+
+				String msgStr = null;
 				// send the user name to server
 				try {
 					Writer output = new OutputStreamWriter(server.getOutputStream(), "UTF-8");
-					// initial ID
 					String name = username.getText().toString();
 					JSONObject send = new JSONObject();
 					send.put("method", "join game");
-					send.put("name", name);
+					send.put("name", name);				
+					System.out.println("check the name validation");
 					output.write(send.toString() + "\n");
 					output.flush();
 					
-					// pass the text of user name to room				
-					Room r = new Room(server, name);
-					r.setUndecorated(true);
-					r.setVisible(true);
-					dispose();
+					// listen if the name valid
+					BufferedReader input = new BufferedReader(new InputStreamReader(server.getInputStream(), "UTF-8"));
+					JSONObject msg = new JSONObject();
+					if ((msgStr = input.readLine()) != null) {
+						msg = new JSONObject(msgStr);
+					}
+					
+					if (msg.getBoolean("check")) {
+						Player player = new Player(msg.getJSONObject("player"));
+						Room r = new Room(server, player.getId(), name, player.getPath());
+						r.setUndecorated(true);
+						r.setVisible(true);
+						dispose();
+					}else {
+						JOptionPane.showMessageDialog(null, "Sorry..someone already taken this name..", 
+								"Try another name!", JOptionPane.WARNING_MESSAGE);
+					}
+					return;
 				} catch (JSONException error) {
 					error.printStackTrace();
 				} catch (UnsupportedEncodingException e1) {
@@ -134,8 +152,8 @@ public class Login extends JFrame {
 				} catch (IOException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
-				} 											
-				
+				}
+
 			}
 		});
 	}

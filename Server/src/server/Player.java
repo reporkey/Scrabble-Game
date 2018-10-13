@@ -24,13 +24,12 @@ public class Player {
         this.ip = socket.getInetAddress().getHostAddress();
         this.port = socket.getPort();
         this.name = msg.getString("name");
-       
         
         // initial a random profile icon and id
         Random rand = new Random();
 		int randomNum = rand.nextInt(10) + 1;
-		this.path = "/img/h" + randomNum + ".png";
-		this.id = System.currentTimeMillis();
+		path = "/img/h" + randomNum + ".png";
+		this.id = System.currentTimeMillis();;
 		
         obj = new JSONObject();
         obj.put("name", name);

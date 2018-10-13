@@ -5,12 +5,12 @@ import java.io.*;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-
 import javax.swing.border.EmptyBorder;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.awt.Color;
 
 import board.ChessBoard;
 import utilities.MyArrayList;
@@ -26,18 +26,20 @@ public class Room extends JFrame {
 	private static MyArrayList<Player> potentialPlayers = new MyArrayList<Player>(); // not include self
 	private static MyArrayList<Player> players = new MyArrayList<Player>();
 	private static JPanel panelPlayer2, panelPlayer3, panelPlayer4, panelPlayer5, panelPlayer6, panelPlayer7, panel_2;
-	private static JLabel profile, I2, I3, I4, I5, I6, I7;
+	private static JLabel I2, I3, I4, I5, I6, I7, profile = new JLabel("");
 	private static JLabel P2, P3, P4, P5, P6, P7;
 	private JList<String> playerList;
 	private BufferedReader input;
 
-	public Room(Socket client, String name) throws JSONException {
+	public Room(Socket client, long id, String name, String path) throws JSONException {
 		this.client = client;
-		Room.name = name;
+		this.name = name;
+		this.id = id;
+		profile.setIcon(new ImageIcon(Room.class.getResource(path)));
 
-		// init listener
 		guiInitialize();
 
+		// init listener
 		Listener listener = new Listener();
 		listener.start();
 	}
@@ -95,7 +97,7 @@ public class Room extends JFrame {
 		contentPane.add(panel_2);
 		panel_2.setLayout(null);
 
-		playerList = new JList<String>();
+		playerList = new JList();
 		playerList.setBackground(new Color(71, 120, 197));
 		playerList.setForeground(Color.WHITE);
 		playerList.setFont(new Font("Lithos Pro", Font.PLAIN, 15));
@@ -126,15 +128,6 @@ public class Room extends JFrame {
 		gbl_panel_4.rowWeights = new double[] { 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE };
 		panel_4.setLayout(gbl_panel_4);
 
-		JLabel label = new JLabel("");
-		GridBagConstraints gbc_label = new GridBagConstraints();
-		gbc_label.fill = GridBagConstraints.BOTH;
-		gbc_label.insets = new Insets(0, 0, 5, 0);
-		gbc_label.gridx = 2;
-		gbc_label.gridy = 0;
-		panel_4.add(label, gbc_label);
-
-		profile = new JLabel("");
 		GridBagConstraints gbc_profile = new GridBagConstraints();
 		gbc_profile.fill = GridBagConstraints.BOTH;
 		gbc_profile.insets = new Insets(0, 0, 5, 5);
@@ -142,12 +135,7 @@ public class Room extends JFrame {
 		gbc_profile.gridy = 2;
 		panel_4.add(profile, gbc_profile);
 
-		JLabel label_1 = new JLabel("");
-		GridBagConstraints gbc_label_1 = new GridBagConstraints();
-		gbc_label_1.fill = GridBagConstraints.BOTH;
-		gbc_label_1.gridx = 2;
-		gbc_label_1.gridy = 4;
-		panel_4.add(label_1, gbc_label_1);
+		
 
 		JPanel poolPanel = new JPanel();
 		poolPanel.setBackground(Color.WHITE);
@@ -296,14 +284,14 @@ public class Room extends JFrame {
 		btnLeave.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				// if self is not in player list, who cannot leave
-				boolean hasSelf = false;
+				int playerCount=0;
 				for (Player player : players) {
-					if (id == player.getId()) {
-						hasSelf = true;
+					if (id == player.getId()) {	
 						break;
 					}
+					playerCount++;
 				}
-				if (!hasSelf) {
+				if(playerCount==players.size()){
 					JOptionPane.showMessageDialog(null, "Sorry..you are not in the room", "Leave the room!",
 							JOptionPane.WARNING_MESSAGE);
 					return;
@@ -327,7 +315,7 @@ public class Room extends JFrame {
 		
 		btnScrabble.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				if (playerList.getModel().getSize() >= 2) {				
+				if (players.size() >= 2) {				
 					JSONObject send = new JSONObject();
 					try {
 						System.out.println("start game!");
@@ -340,7 +328,7 @@ public class Room extends JFrame {
 						e1.printStackTrace();
 					}
 				}else{
-					JOptionPane.showMessageDialog(null, "Sorry..there is no player in the room..", "Join the room!",
+					JOptionPane.showMessageDialog(null, "Sorry..there is no player in the room..", "Invite other players!",
 							JOptionPane.WARNING_MESSAGE);
 				}
 				
@@ -378,7 +366,7 @@ public class Room extends JFrame {
 						output.write(sendMsg.toString() + "\n");
 						output.flush();
 					}else{
-						JOptionPane.showMessageDialog(null, "Sorry..there is no player in the room..", "Join the room!", JOptionPane.WARNING_MESSAGE);
+						JOptionPane.showMessageDialog(null, "Sorry..you didn't select any players.", "Click the checkbox!", JOptionPane.WARNING_MESSAGE);
 					}				
 				} catch (UnsupportedEncodingException e1) {
 					e1.printStackTrace();
@@ -398,25 +386,6 @@ public class Room extends JFrame {
 		panelPlayer5.setVisible(false);
 		panelPlayer6.setVisible(false);
 		panelPlayer7.setVisible(false);
-		
-		switch (temp.size()) {
-		case 1: {
-			((JCheckBox)panelPlayer7.getComponent(1)).setSelected(false);
-		}
-		case 2: {
-			((JCheckBox)panelPlayer6.getComponent(1)).setSelected(false);
-		}
-		case 3: {
-			((JCheckBox)panelPlayer5.getComponent(1)).setSelected(false);
-		}
-		case 4: {
-			((JCheckBox)panelPlayer4.getComponent(1)).setSelected(false);
-		}
-		case 5: {
-			((JCheckBox)panelPlayer3.getComponent(1)).setSelected(false);
-			break;
-		}
-		}
 		try {
 			switch (temp.size()) {
 			case 6: {
@@ -472,7 +441,6 @@ public class Room extends JFrame {
 		@Override
 		public void run() {
 			String msgStr = null;
-
 			try {
 				Writer output = new OutputStreamWriter(client.getOutputStream(), "UTF-8");
 				input = new BufferedReader(new InputStreamReader(client.getInputStream(), "UTF-8"));
@@ -480,9 +448,9 @@ public class Room extends JFrame {
 					JSONObject msg = new JSONObject(msgStr);
 					switch (msg.getString("method")) {
 					case "join game": {
+						System.out.println("Someone Join Game");
 						Player player = new Player(msg.getJSONObject("player"));
 						profile.setIcon(new ImageIcon(Room.class.getResource(player.getPath())));
-						id = player.getId(); 
 						break;
 					}
 					case "request invite": {
@@ -511,14 +479,13 @@ public class Room extends JFrame {
 						}
 						Room.updatePotentialPlayersNumber(potentialPlayers);
 						
-						// update players
+						// update players; if not include self, set only self
 						arr = msg.getJSONArray("players");
 						players = new MyArrayList<Player>();
 						String[] playersName = new String[10];
 						boolean doesHaveSelf = false;
 						if (arr.length() > 0) {
 							for (int i = 0; i < arr.length(); i++) {
-//								System.out.println("before sort: " + arr.getJSONObject(i).getString("name"));
 								Player player = new Player(arr.getJSONObject(i));
 								players.add(player);
 								playersName[i] = player.getName();
@@ -542,15 +509,18 @@ public class Room extends JFrame {
 					case "turn": {
 						System.out.println("Game begin!!!!!!!");
 						System.out.println();
+						// is my turn
+						JSONObject player = msg.getJSONObject("player");
 						Instrcution frame = new Instrcution();
 						frame.setVisible(true);
+						
 						frame.setTitle("Instructions");	
-						ChessBoard game = new ChessBoard(name, id, msg, client);
+						ChessBoard game = new ChessBoard(id, msg, client);
 						System.out.println(msg);
 						game.setUndecorated(true);
 						game.setVisible(true);
 						game.setPlayerList();
-						contentPane.setVisible(false);
+						dispose();
 						return;
 					}
 					}
