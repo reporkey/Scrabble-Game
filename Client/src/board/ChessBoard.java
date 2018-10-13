@@ -2,18 +2,13 @@ package board;
 
 /* NEED A NEW METHOD THAT CONVERT JSONARRAY TO MYARRAYLIST*/
 
-import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.EventQueue;
 import java.awt.GridLayout;
-import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.net.Socket;
-import java.util.ArrayList;
-
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -26,7 +21,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import room.Room;
 import utilities.MyArrayList;
 import utilities.Player;
 
@@ -41,6 +35,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 
 public class ChessBoard extends JFrame implements ActionListener, KeyListener {
@@ -53,7 +48,6 @@ public class ChessBoard extends JFrame implements ActionListener, KeyListener {
 	private int xx, xy;
 	private MyArrayList<Player> players;
 	private static JLabel P1, P2, P3, P4, scoreP1, scoreP2, scoreP3, scoreP4;
-	private String voteWords;
 	private JButton[][] squares = new JButton[20][20];
 	Border borderW = BorderFactory.createLineBorder(Color.WHITE, 1);
 	Border borderB = BorderFactory.createLineBorder(Color.BLACK, 1);
@@ -87,6 +81,9 @@ public class ChessBoard extends JFrame implements ActionListener, KeyListener {
 		}
 		Listener listener = new Listener();
 		listener.start();
+		
+		Update update = new Update();
+		update.start();
 
 		guiInitialize();
 	}
@@ -577,6 +574,7 @@ public class ChessBoard extends JFrame implements ActionListener, KeyListener {
 							output = new OutputStreamWriter(client.getOutputStream(), "UTF-8");
 							sendMsg.put("method", "vote");
 							sendMsg.put("value", voteResult);
+							sendMsg.put("id", id);
 							output.write(sendMsg.toString() + "\n");
 							output.flush();
 						} catch (JSONException | IOException e1) {
@@ -611,7 +609,7 @@ public class ChessBoard extends JFrame implements ActionListener, KeyListener {
 						break;
 					}
 					case "end": {
-						GameOver end = new GameOver(name, players, client);
+						new GameOver(name, players, client);
 						System.out.println("Game over");
 						return;
 					}
@@ -620,6 +618,56 @@ public class ChessBoard extends JFrame implements ActionListener, KeyListener {
 			} catch (JSONException | IOException e) {
 				e.printStackTrace();
 			}
+		}
+	}
+	
+	private class Update extends Thread{
+		Player self;
+		public void run() {
+			while (true) {
+				try {
+					Thread.sleep(500);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				for (Player self : players) {
+					if (self.getId() == id) {
+						this.self = self;
+					}
+				}
+				if (self == null) continue;
+				
+				// update map status each half second
+				if (myTurn) {
+					try {
+						JSONObject send = new JSONObject();
+						Writer output = new OutputStreamWriter(client.getOutputStream(), "UTF-8");
+						send.put("method", "update");
+						// generated 2D json array
+						JSONArray map = new JSONArray();
+						for (int x = 0; x < 20; x++) {
+							JSONArray cloumn = new JSONArray();
+							for (int y = 0; y < 20; y++) {
+								cloumn.put(squares[x][y].getText());
+							}
+							map.put(cloumn);
+						}
+						send.put("map", map);
+						output.write(send.toString() + "\n");
+					} catch (JSONException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (UnsupportedEncodingException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+			}
+			
 		}
 	}
 }

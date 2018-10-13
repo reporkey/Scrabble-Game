@@ -1,29 +1,20 @@
 package room;
 
 import java.net.*;
-import java.util.ArrayList;
-import java.util.Random;
 import java.io.*;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 
 import javax.swing.border.EmptyBorder;
-import javax.swing.text.Position;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.jgoodies.forms.layout.FormLayout;
-import com.jgoodies.forms.layout.ColumnSpec;
-import com.jgoodies.forms.layout.RowSpec;
-
 import board.ChessBoard;
 import utilities.MyArrayList;
 import utilities.Player;
-
-import com.jgoodies.forms.layout.FormSpecs;
 
 public class Room extends JFrame {
 
@@ -33,7 +24,6 @@ public class Room extends JFrame {
 	private int xx, xy;
 	private Socket client;
 	private static MyArrayList<Player> potentialPlayers = new MyArrayList<Player>(); // not include self
-	private static MyArrayList<Player> invitedPlayers = new MyArrayList<Player>();
 	private static MyArrayList<Player> players = new MyArrayList<Player>();
 	private static JPanel panelPlayer2, panelPlayer3, panelPlayer4, panelPlayer5, panelPlayer6, panelPlayer7, panel_2;
 	private static JLabel profile, I2, I3, I4, I5, I6, I7;
@@ -43,7 +33,7 @@ public class Room extends JFrame {
 
 	public Room(Socket client, String name) throws JSONException {
 		this.client = client;
-		this.name = name;
+		Room.name = name;
 
 		// init listener
 		guiInitialize();
@@ -105,7 +95,7 @@ public class Room extends JFrame {
 		contentPane.add(panel_2);
 		panel_2.setLayout(null);
 
-		playerList = new JList();
+		playerList = new JList<String>();
 		playerList.setBackground(new Color(71, 120, 197));
 		playerList.setForeground(Color.WHITE);
 		playerList.setFont(new Font("Lithos Pro", Font.PLAIN, 15));
@@ -306,12 +296,17 @@ public class Room extends JFrame {
 		btnLeave.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				// if self is not in player list, who cannot leave
+				boolean hasSelf = false;
 				for (Player player : players) {
 					if (id == player.getId()) {
-						JOptionPane.showMessageDialog(null, "Sorry..you are not in the room", "Leave the room!",
-								JOptionPane.WARNING_MESSAGE);
-						return;
+						hasSelf = true;
+						break;
 					}
+				}
+				if (!hasSelf) {
+					JOptionPane.showMessageDialog(null, "Sorry..you are not in the room", "Leave the room!",
+							JOptionPane.WARNING_MESSAGE);
+					return;
 				}
 				try {
 					Writer output = new OutputStreamWriter(client.getOutputStream(), "UTF-8");
@@ -547,8 +542,6 @@ public class Room extends JFrame {
 					case "turn": {
 						System.out.println("Game begin!!!!!!!");
 						System.out.println();
-						// is my turn
-						JSONObject player = msg.getJSONObject("player");
 						Instrcution frame = new Instrcution();
 						frame.setVisible(true);
 						frame.setTitle("Instructions");	
