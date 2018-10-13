@@ -44,7 +44,7 @@ public class ChessBoard extends JFrame implements ActionListener, KeyListener {
 	private Socket client;
 	private String name;
 	private long id;
-	private boolean myTurn = false;
+	private long whoseTurnId = 0;
 	private int xx, xy;
 	private MyArrayList<Player> players;
 	private static JLabel P1, P2, P3, P4, scoreP1, scoreP2, scoreP3, scoreP4;
@@ -65,9 +65,7 @@ public class ChessBoard extends JFrame implements ActionListener, KeyListener {
 			JSONArray arr = msg.getJSONArray("players");
 			players = new MyArrayList<Player>();
 			Player player = new Player(msg.getJSONObject("player"));
-			if (player.getId() == id) {
-				this.myTurn = true;
-			}
+			this.whoseTurnId = player.getId();
 			//update players
 			for (int i = 0; i < arr.length(); i++) {
 				player = new Player(arr.getJSONObject(i));
@@ -241,7 +239,7 @@ public class ChessBoard extends JFrame implements ActionListener, KeyListener {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				// ignore if it's not myTurn
-				if (!myTurn) {
+				if (whoseTurnId != id) {
 					return;
 				}
 				JSONObject sendMsg = new JSONObject();
@@ -291,7 +289,7 @@ public class ChessBoard extends JFrame implements ActionListener, KeyListener {
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource() instanceof JButton) {
 			// only if its my turn
-			if (myTurn) {
+			if (whoseTurnId == id) {
 				Object source = e.getSource();
 				for (int x = 0; x < 20; x++) {
 					for (int y = 0; y < 20; y++) {
@@ -309,7 +307,7 @@ public class ChessBoard extends JFrame implements ActionListener, KeyListener {
 	@Override
 	public void keyPressed(KeyEvent e) {
 		// ignore if not my turn
-		if (!myTurn) {
+		if (whoseTurnId != id) {
 			return;
 		}
 		Object source = e.getSource();
@@ -378,7 +376,7 @@ public class ChessBoard extends JFrame implements ActionListener, KeyListener {
 							e1.printStackTrace();
 						}
 					} else {
-					JOptionPane.showMessageDialog(null, "Please input an alphabet", "Oops!",
+						JOptionPane.showMessageDialog(null, "Please input an alphabet", "Oops!",
 							JOptionPane.WARNING_MESSAGE);
 					}
 				}
@@ -473,12 +471,17 @@ public class ChessBoard extends JFrame implements ActionListener, KeyListener {
 
 	// display score
 	public void setPlayerList() {
-		if (myTurn) {
+		if (whoseTurnId == id) {
 			lblTurn.setText("Your turn.");
-			//lblTurn.paintImmediately(lblTurn.getVisibleRect());
 		} else {
-			lblTurn.setText("Other player's turn.");
-			//lblTurn.paintImmediately(lblTurn.getVisibleRect());
+			// whose turn
+			String name = "Other player";
+			for (Player player : players) {
+				if (player.getId() == whoseTurnId) {
+					name = player.getName();
+				}
+			}
+			lblTurn.setText(name + "'s turn.");
 		}
 		P4.setVisible(false);
 		scoreP4.setVisible(false);
@@ -574,12 +577,8 @@ public class ChessBoard extends JFrame implements ActionListener, KeyListener {
 					JSONObject msg = new JSONObject(msgStr);
 					switch (msg.getString("method")) {
 					case "turn": {
-						// is my turn
-						if (msg.getJSONObject("player").getLong("id") == id) {
-							myTurn = true;
-						} else {
-							myTurn = false;
-						}
+						// whose turn
+						whoseTurnId = msg.getJSONObject("player").getLong("id");
 						
 						// update map
 						if (msg.has("map")) {
@@ -645,7 +644,7 @@ public class ChessBoard extends JFrame implements ActionListener, KeyListener {
 						}
 						setPlayerList();
 						// if is my turn, skip map
-						if (myTurn) {
+						if (whoseTurnId == id) {
 							break;
 						}
 						// update map
@@ -690,7 +689,7 @@ public class ChessBoard extends JFrame implements ActionListener, KeyListener {
 				}
 				
 				// update map status each half second
-				if (myTurn) {
+				if (whoseTurnId == id) {
 					try {
 						JSONObject send = new JSONObject();
 						Writer output = new OutputStreamWriter(client.getOutputStream(), "UTF-8");
@@ -705,7 +704,6 @@ public class ChessBoard extends JFrame implements ActionListener, KeyListener {
 							map.put(cloumn);
 						}
 						send.put("map", map);
-//						System.out.println("Client: " + send.toString());
 						output.write(send.toString() + "\n");
 						output.flush();
 					} catch (JSONException e) {
@@ -715,8 +713,10 @@ public class ChessBoard extends JFrame implements ActionListener, KeyListener {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
+						// server terminate
+						JOptionPane.showMessageDialog(null, "Disconnect with server.", "Disconnection",
+								JOptionPane.WARNING_MESSAGE);
+						return;
 					}
 				}
 			}

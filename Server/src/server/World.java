@@ -191,12 +191,10 @@ public class World {
 							if (id == invitedPlayers.get(i).getId()) {
 								invitedPlayers.get(i).setAccept(msg.getInt("value"));
 								if (msg.getInt("value") == 1) {
-									// move to players from invited players if
-									// accept
+									// move to players from invited players if accept
 									players.add(invitedPlayers.get(i));
 								} else {
-									// move to potential from invited players if
-									// deny
+									// move to potential from invited players if deny
 									potentialPlayers.add(invitedPlayers.get(i));
 								}
 								name = invitedPlayers.get(i).getName();
@@ -210,8 +208,6 @@ public class World {
 						send.put("players", players.toJson());
 						broadcast(send, potentialPlayers);
 						broadcast(send, players);
-						// System.out.println("response invite: " +
-						// send.toString());
 						System.out.print("Request responce: from: " + name + " value: " + msg.getInt("value"));
 						break;
 					}
@@ -305,7 +301,7 @@ public class World {
 					}
 				}
 			} catch (IOException e) {
-				e.printStackTrace();
+				// connection with this client is lost 
 			}
 		}
 	}

@@ -328,7 +328,7 @@ public class Room extends JFrame {
 						e1.printStackTrace();
 					}
 				}else{
-					JOptionPane.showMessageDialog(null, "Sorry..there is no player in the room..", "Invite other players!",
+					JOptionPane.showMessageDialog(null, "Sorry..there is not enough player in the room..", "Invite other players!",
 							JOptionPane.WARNING_MESSAGE);
 				}
 				
@@ -386,6 +386,24 @@ public class Room extends JFrame {
 		panelPlayer5.setVisible(false);
 		panelPlayer6.setVisible(false);
 		panelPlayer7.setVisible(false);
+		switch (temp.size()) {
+		case 1: {
+			((JCheckBox)panelPlayer7.getComponent(1)).setSelected(false);
+		}
+		case 2: {
+			((JCheckBox)panelPlayer6.getComponent(1)).setSelected(false);
+		}
+		case 3: {
+			((JCheckBox)panelPlayer5.getComponent(1)).setSelected(false);
+		}
+		case 4: {
+			((JCheckBox)panelPlayer4.getComponent(1)).setSelected(false);
+		}
+		case 5: {
+			((JCheckBox)panelPlayer3.getComponent(1)).setSelected(false);
+			break;
+		}
+		}
 		try {
 			switch (temp.size()) {
 			case 6: {
