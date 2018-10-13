@@ -275,6 +275,9 @@ public class World {
 				// iterate player's turn
 				for (Player player : players) {
 					
+					// reset
+					word = null;
+					
 					// if all plays pass
 					System.out.println("pass: " + pass + ", player size: " + players.size());
 					if (pass >= players.size()) {
@@ -285,7 +288,6 @@ public class World {
 							e.printStackTrace();
 						}
 					}
-					
 					System.out.println("SERVER:: This is " + player.getName() + "'s turn.");
 
 					// send whose turn
@@ -367,11 +369,11 @@ public class World {
 					}
 
 					// if all players had voted or someone vote no
-					if (vote == players.size()) {
+					if (vote == -1) {
+						continue;
+					}else if (vote == players.size()) {
 						player.setScore(player.getScore() + word.length());
 						System.out.println(player.getScore());
-					} else if (vote == -1) {
-						continue;
 					}
 
 					// if map full
@@ -396,9 +398,6 @@ public class World {
 						}
 
 					}*/
-
-					// reset
-					word = null;
 				}
 			}
 		}

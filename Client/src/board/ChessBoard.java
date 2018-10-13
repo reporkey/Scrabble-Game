@@ -292,59 +292,47 @@ public class ChessBoard extends JFrame implements ActionListener, KeyListener {
 		}
 	}
 
-	int currenti = -1;
-	int currentj = -1;
+	int lasti = -1;
+	int lastj = -1;
 	@Override
 	public void keyPressed(KeyEvent e) {
 		Object source = e.getSource();
 		for (int i = 0; i < 20; i++) {
 			for (int j = 0; j < 20; j++) {
 				if (source == squares[i][j]) {
-					System.out.println("this: " + i + ", " + j + "; current: " + currenti + ", " + currentj);
-					if (currenti != -1 && currentj != -1) {
-						System.out.println("not empty");
-						if (!squares[i][j].getText().equals("") ||(currenti == i && currentj == j)) {
-							System.out.println("return");
-							return;
+					System.out.println("this: " + i + ", " + j + "; current: " + lasti + ", " + lastj);
+					if (lasti != -1 && lastj != -1 && !squares[i][j].getText().equals("")) {
+						if (lasti == i && lastj == j) {
+							System.out.println("same spot");
+						}else {
+							System.out.println("not same spot");
+							if (!squares[i][j].getText().equals("")) {
+								System.out.println("not empty");
+								return;
+							}else {
+								squares[lasti][lastj].setText("");
+							}
 						}
 					}
 						
 					if (e.getKeyCode() >= 65 && e.getKeyCode() <= 90) {
 						char input = e.getKeyChar();
-						currenti = i;
-						currentj = j;
+						lasti = i;
+						lastj = j;
 						// System.out.println(e.getKeyChar());
 						squares[i][j].setText(Character.toString(input));
-					} else {
-						JOptionPane.showMessageDialog(null, "Please input an alphabet", "Oops!",
-								JOptionPane.WARNING_MESSAGE);
-					}
-				}
-			}
-		}
-	}
-
-	@Override
-	public void keyTyped(KeyEvent e) {
-	}
-
-	@Override
-	public void keyReleased(KeyEvent e) {
-		Object source = e.getSource();
-		for (int i = 0; i < 20; i++) {
-			for (int j = 0; j < 20; j++) {
-				if (source == squares[i][j]) {
-					squares[i][j].setBorderPainted(true);
-					if (e.getKeyCode() >= 37 && e.getKeyCode() <= 40) { // UP & DOWN
+					} else if (!squares[i][j].getText().equals("") && e.getKeyCode() >= 37 && e.getKeyCode() <= 40) { // UP & DOWN
+						squares[i][j].setBorderPainted(true);
+						// LEFT & RIGHT
 						if (e.getKeyCode() == 38 || e.getKeyCode() == 40) {
 							word = checkVWord(i, j);
-						} else { // LEFT & RIGHT
+						} else { 
 							word = checkHWord(i, j);
-							// sendword to server
 						}
 						System.out.println("My selected word: " + word);
 						JSONObject sendMsg = new JSONObject();
 						try {
+							// send word to server
 							Writer output = new OutputStreamWriter(client.getOutputStream(), "UTF-8");
 							sendMsg.put("method", "turn");
 							sendMsg.put("id", id);
@@ -362,15 +350,28 @@ public class ChessBoard extends JFrame implements ActionListener, KeyListener {
 							System.out.println(sendMsg.toString());
 							output.write(sendMsg.toString() + "\n");
 							output.flush();
-						} catch (JSONException | IOException e1) { // TODOAuto-generated
-																	// catch
-																	// block
+							lasti = -1;
+							lastj = -1;
+						} catch (JSONException | IOException e1) { // TODOAuto-generated catch block
 							e1.printStackTrace();
 						}
+					} else {
+					JOptionPane.showMessageDialog(null, "Please input an alphabet", "Oops!",
+							JOptionPane.WARNING_MESSAGE);
 					}
 				}
 			}
 		}
+	}
+
+	@Override
+	public void keyTyped(KeyEvent e) {
+	}
+
+	// word confirm
+	@Override
+	public void keyReleased(KeyEvent e) {
+		Object source = e.getSource();
 	}
 
 	// is valid if no character placed before
