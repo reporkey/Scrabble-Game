@@ -7,9 +7,6 @@ import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 import org.json.*;
 
-import utilities.MyArrayList;
-import utilities.Player;
-
 import java.awt.Color;
 import javax.swing.JButton;
 import javax.swing.UIManager;
@@ -22,32 +19,21 @@ import java.awt.event.MouseEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseMotionAdapter;
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.Random;
 
 public class Login extends JFrame {
 
-	private static JFrame frame;
 	private JPanel contentPane;
 	private JTextField username;
 	private int xx, xy;
-	private String path;
 	private Socket server;
-	private String serverIp;
-	private int serverPort;
-	private static String Msg;
-	private MyArrayList<Player> potentialPlayers = new MyArrayList<Player>();
 
 	public void setSocket (Socket server) {
 		this.server = server;
-		this.serverPort = server.getPort();
-		this.serverIp = server.getInetAddress().toString();
 		
 	}
 	
@@ -128,42 +114,34 @@ public class Login extends JFrame {
 			public void actionPerformed(ActionEvent e) {
 				
 				// send the user name to server
-				Boolean validName;
 				try {
-					Random rand = new Random();
-					int randomNum = rand.nextInt((10 - 1) + 1) + 1;
-					path = "/img/h" + randomNum + ".png";
-					validName = sendName(username.getText().toString(),path);
+					Writer output = new OutputStreamWriter(server.getOutputStream(), "UTF-8");
+					// initial ID
+					long id  = System.currentTimeMillis();
+					String name = username.getText().toString();
+					JSONObject send = new JSONObject();
+					send.put("method", "join game");
+					send.put("id", id);
+					send.put("name", name);
+					output.write(send.toString() + "\n");
+					output.flush();
+					
 					// pass the text of user name to room				
-					Room r = new Room(username.getText(), server,path);
+					Room r = new Room(server, id, name);
 					r.setUndecorated(true);
 					r.setVisible(true);
 					dispose();
 				} catch (JSONException error) {
 					error.printStackTrace();
+				} catch (UnsupportedEncodingException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
 				} 											
 				
 			}
 		});
-	}
-
-	// if the name if occurred, then it's not valid
-	public boolean sendName(String name,String path) throws JSONException {
-		try {
-			if (server != null) {
-				Writer output = new OutputStreamWriter(server.getOutputStream(), "UTF-8");
-				
-				JSONObject send = new JSONObject();
-				send.put("method", "join game");
-				send.put("path", path);
-				send.put("name", name);
-				
-				output.write(send.toString() + "\n");
-				output.flush();
-			}
-		} catch (IOException e) {
-			System.out.println(e.getMessage());
-		}
-		return true;
 	}
 }

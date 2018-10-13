@@ -12,6 +12,7 @@ public class Player {
     private String ip;
     private int port;
     private String name;
+    private long id;
     private String path;
     private int accept = -1;
     private int vote = -1;
@@ -23,14 +24,16 @@ public class Player {
         this.ip = socket.getInetAddress().getHostAddress();
         this.port = socket.getPort();
         this.name = msg.getString("name");
-        this.path=msg.getString("path");
+        this.id = msg.getLong("id");
         
-     // initial a random profile icon
-
+        // initial a random profile icon
+        Random rand = new Random();
+		int randomNum = rand.nextInt(10) + 1;
+		path = "/img/h" + randomNum + ".png";
+		
         obj = new JSONObject();
-        obj.put("ip", ip);
-        obj.put("port", port);
         obj.put("name", name);
+        obj.put("id", id);
         obj.put("path", path);
         obj.put("accept", accept);
         obj.put("score", score);
@@ -98,7 +101,12 @@ public class Player {
 	public String getName() {
 		return name;
 	}
+	
 	public String getPath() {
 		return this.path;
+	}
+	
+	public long getId() {
+		return id;
 	}
 }

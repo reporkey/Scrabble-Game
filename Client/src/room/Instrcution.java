@@ -10,14 +10,14 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.JLabel;
 import java.awt.Color;
 
-public class instrcution extends JFrame {
+public class Instrcution extends JFrame {
 
 	private JPanel contentPane;
 
 	/**
 	 * Create the frame.
 	 */
-	public instrcution() {
+	public Instrcution() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 343, 362);
 		contentPane = new JPanel();
@@ -32,7 +32,7 @@ public class instrcution extends JFrame {
 		panel.setLayout(null);
 		
 		JLabel lblNewLabel = new JLabel("New label");
-		lblNewLabel.setIcon(new ImageIcon(instrcution.class.getResource("/img/instruction.jpg")));
+		lblNewLabel.setIcon(new ImageIcon(Instrcution.class.getResource("/img/instruction.jpg")));
 		lblNewLabel.setBounds(0, 0, 345, 340);
 		panel.add(lblNewLabel);
 	}

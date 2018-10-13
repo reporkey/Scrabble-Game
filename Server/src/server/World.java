@@ -6,8 +6,7 @@ import org.json.JSONObject;
 import javax.net.ServerSocketFactory;
 import java.io.*;
 import java.net.*;
-import java.util.Collections;
-import java.util.Iterator;
+import java.util.ArrayList;
 
 public class World {
 
@@ -69,43 +68,77 @@ public class World {
 					Player player = new Player(client, msg);
 					potentialPlayers.add(player);
 					send.put("method", "join game");
-					send.put("potentialPlayers", potentialPlayers.toJson());
+					send.put("player", player.getObj());
+					System.out.println("Join game: " + player.getName() + " Id: " + player.getId());
+					MyArrayList<Player> temp = new MyArrayList<Player>();
+					temp.add(player);
+					broadcast(send, temp);
+					// then update to all
+					send.put("method", "update");
+					send.put("potential players", potentialPlayers.toJson());
 					send.put("players", players.toJson());
-					System.out.println("Join game: " + player.getName());
 					broadcast(send, potentialPlayers);
+					broadcast(send, players);
 					break;
 				}
 
 				case "request invite": {
+					// add invited player to invited players
 					JSONArray arr = msg.getJSONArray("players");
+					ArrayList<Integer> toMoveIndex = new ArrayList<Integer>();
 					for (int i = 0; i < arr.length(); i++) {
 						JSONObject invited = arr.getJSONObject(i);
-						String name = invited.getString("name");
-						for (Player player : potentialPlayers) {
-							if (name.equals(player.getObj().get("name"))) {
+						long id = invited.getLong("id");
+						for (int j=0; j<potentialPlayers.size(); j++) {
+//							System.out.println("invited players id " + id + " || potential id " + potentialPlayers.get(i).getId());
+							Player player = potentialPlayers.get(j);
+							if (id == player.getId()) {
 								invitedPlayers.add(player);
+								toMoveIndex.add(j);
 							}
 						}
 					}
-					// from
-					String ip = client.getInetAddress().getHostAddress();
-					int port = client.getPort();
-					String name = "";
-					for (Player player : potentialPlayers) {
-						if (ip.equals(player.getIp()) && port == player.getPort()) {
-							name = player.getName();							
-							if(!players.contains(player)){
-								player.setAccept(1);
-								players.add(player);
-							}								
+					// remove them from potential players
+//					System.out.println("size: " + potentialPlayers.size());
+					for (int i=toMoveIndex.size()-1; i>=0; i--) {
+						potentialPlayers.remove((int)toMoveIndex.get(i));
+					}
+//					System.out.println("size after move: " + potentialPlayers.size());
+					// set inviter "accept" and move to players from potential
+					JSONObject inviter = new JSONObject();
+					long id = msg.getLong("id");
+					// if the inviter is already in the player list
+					for (int i=0; i<players.size(); i++) {
+						if (id == players.get(i).getId()) {
+							System.out.println("iintiver: " + id);
+							inviter = players.get(i).getObj();
 							break;
 						}
 					}
+					for (int i=0; i<potentialPlayers.size(); i++) {
+						if (id == potentialPlayers.get(i).getId()) {
+							System.out.println("iintiver: " + id);
+							potentialPlayers.get(i).setAccept(1);
+							players.add(potentialPlayers.get(i));
+							inviter = potentialPlayers.get(i).getObj();
+							// then remove from potential
+							potentialPlayers.remove(i);
+							break;
+						}
+					}
+					// send back inviter status
+					send.put("method", "update");
+					send.put("potential players", potentialPlayers.toJson());
+					send.put("players", players.toJson());
+					broadcast(send, players);
+					broadcast(send, potentialPlayers);
+					// send to invited
+					send = new JSONObject();
 					send.put("method", "request invite");
-					send.put("from", name);
+					send.put("from", inviter);
+//					System.out.println("inviter: " + inviter.toString());
 					broadcast(send, invitedPlayers);
-					// print
-					System.out.print("Request invite: from " + name + " to -> ");
+					System.out.print("Request invite: from " + inviter.getString("name") + " to -> ");
 					for (Player player : invitedPlayers) {
 						System.out.print(player.getName() + " || ");
 					}
@@ -114,43 +147,79 @@ public class World {
 				}
 
 				case "response invite": {
-					String ip = client.getInetAddress().getHostAddress();
-					int port = client.getPort();
 					String name = "";
-					// search which player send the msg
-					for (Player player : potentialPlayers) {
-						// if the player accept, put into players list
-						if (ip.equals(player.getIp()) && port == player.getPort()) {
-							player.setAccept(msg.getInt("value"));
-							name = player.getName();
-							players.add(player);
+					long id = msg.getLong("id");
+					// set player accept
+					for (int i=0; i<invitedPlayers.size(); i++) {
+						if (id == invitedPlayers.get(i).getId()) {
+							invitedPlayers.get(i).setAccept(msg.getInt("value"));
+							if(msg.getInt("value") == 1) {
+								// move to players from invited players if accept
+								players.add(invitedPlayers.get(i));
+							}else {
+								// move to potential from invited players if deny
+								potentialPlayers.add(invitedPlayers.get(i));
+							}
+							name = invitedPlayers.get(i).getName();
+							invitedPlayers.remove(i);
 							break;
 						}
 					}
-					send.put("method", "response invite");
+					
+					send.put("method", "update");
+					send.put("potential players", potentialPlayers.toJson());
 					send.put("players", players.toJson());
 					broadcast(send, potentialPlayers);
+					broadcast(send, players);
+					System.out.println("response invite: " + send.toString());
 					System.out.print("Request responce: from: " + name + " value: " + msg.getInt("value"));
+					break;
+				}
+				
+				case "leave room": {
+					long id = msg.getLong("id");
+					for (int i=0; i<players.size(); i++) {
+						if (id == players.get(i).getId()) {
+							players.get(i).setAccept(0);
+							potentialPlayers.add(players.get(i));
+							players.remove(i);
+							break;
+						}
+					}
+					System.out.println("leave: " + id);
+					send.put("method", "update");
+					send.put("potential players", potentialPlayers.toJson());
+					send.put("players", players.toJson());
+					broadcast(send, potentialPlayers);
+					broadcast(send, players);
 					break;
 				}
 
 				case "start game": {
+					int accept = 0;
+					for (Player player : players) {
+						if (player.getAccept() == 1) {
+							accept++;
+						}
+					}
 					start = true;
+					break;
 				}
 
 				case "turn": {
 					String name = "";
-					String ip = client.getInetAddress().getHostAddress();
-					int port = client.getPort();
+					long id = msg.getLong("id");
 					for (Player player : potentialPlayers) {
-						if (ip.equals(player.getIp()) && port == player.getPort()) {
+						if (id == player.getId()) {
 							name = player.getName();
 							break;
 						}
 					}
 					System.out.println("Receive word from: " + name + " word: " + msg.getString("word"));
 					word = msg.getString("word");
-					map = (JSONArray) msg.get("map");
+					if (msg.has("map")) {
+						map = (JSONArray) msg.get("map");
+					}
 					break;
 				}
 
@@ -187,28 +256,16 @@ public class World {
 		public void run() {
 
 			// Check accept
-			while (true) {
+			while (!start) {
 				try {
 					Thread.sleep(100);
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				int accept = 0;
-				for (Player player : players) {
-					if (player.getAccept() == 1) {
-						accept++;
-					}
-				}
-				/*
-				 * for (Player player : players) { if (player.getAccept() == 1)
-				 * { accept++; } }
-				 */
-				if (accept >= players.size() && accept > 1) {
-					if (start) break;
-				}
 			}
-
+			System.out.println("Game start!!!!!!!!");
+			System.out.println();
 			for (Player player : players) {
 				System.out.println(player.getName());
 			}
@@ -260,13 +317,20 @@ public class World {
 					// the player does not pass, send vote
 					if (!word.equals("")) {
 						pass = 0;
+						player.setVote(1);
 						send = new JSONObject();
 						try {
 							send.put("method", "vote");
 							send.put("word", word);
 							send.put("map", map);
 							send.put("player", player.getObj());
-							broadcast(send, players);
+							MyArrayList<Player> temp = new MyArrayList<Player>();
+							for (Player each : players) {
+								if (!each.equals(player)) {
+									temp.add(each);
+								}
+							}
+							broadcast(send, temp);
 						} catch (JSONException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();

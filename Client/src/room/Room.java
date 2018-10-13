@@ -32,7 +32,7 @@ public class Room extends JFrame {
 
 	private JPanel contentPane;
 	private static String name;
-	private String path;
+	private long id;
 	private int xx, xy;
 	private Socket client;
 	private static MyArrayList<Player> potentialPlayers = new MyArrayList<Player>(); // not include self
@@ -44,10 +44,10 @@ public class Room extends JFrame {
 	private JList<String> playerList;
 	private BufferedReader input;
 
-	public Room(String name, Socket client, String path) throws JSONException {
+	public Room(Socket client, long id, String name) throws JSONException {
 		this.client = client;
 		this.name = name;
-		this.path = path;
+		this.id = id;
 
 		// init listener
 		guiInitialize();
@@ -149,7 +149,6 @@ public class Room extends JFrame {
 		panel_4.add(label, gbc_label);
 
 		profile = new JLabel("");
-		profile.setIcon(new ImageIcon(Room.class.getResource(path)));
 		GridBagConstraints gbc_profile = new GridBagConstraints();
 		gbc_profile.fill = GridBagConstraints.BOTH;
 		gbc_profile.insets = new Insets(0, 0, 5, 5);
@@ -289,34 +288,7 @@ public class Room extends JFrame {
 		I3 = new JLabel("");
 		I3.setBounds(22, 6, 84, 81);
 		panelPlayer3.add(I3);
-
-		// Start the game, only the room host is able to.
-		// JButton btnNewButton = new JButton("Scrabble");
-		// btnNewButton.addActionListener(new ActionListener() {
-		// public void actionPerformed(ActionEvent e) {
-		// if (players.size() > 1) {
-		// JSONObject sendMsg = new JSONObject();
-		// try {
-		// Writer output = new OutputStreamWriter(client.getOutputStream(),
-		// "UTF-8");
-		// sendMsg.put("method", "start");
-		// output.write(sendMsg.toString() + "\n");
-		// output.flush();
-		// //System.exit(0);
-		// } catch (JSONException | IOException e1) {
-		// // TODO Auto-generated catch block
-		// e1.printStackTrace();
-		// }
-		// } else
-		// JOptionPane.showMessageDialog(null, "There are no enough player!",
-		// "Notice",
-		// JOptionPane.ERROR_MESSAGE);
-		// }
-		// });
-		// btnNewButton.setBounds(39, 209, 117, 29);
-		// panel_2.add(btnNewButton);
-
-		
+	
 		JLabel lblRoomPlayerList = new JLabel("Players in Room: ");
 		lblRoomPlayerList.setFont(new Font("Lithos Pro", Font.PLAIN, 16));
 		lblRoomPlayerList.setForeground(Color.WHITE);
@@ -335,14 +307,42 @@ public class Room extends JFrame {
 		btnLeave.setBounds(375, 392, 117, 29);
 		poolPanel.add(btnLeave);
 
+		btnLeave.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				// if self is not in player list, who cannot leave
+				for (Player player : players) {
+					if (id == player.getId()) {
+						JOptionPane.showMessageDialog(null, "Sorry..you are not in the room", "Leave the room!",
+								JOptionPane.WARNING_MESSAGE);
+						return;
+					}
+				}
+				try {
+					Writer output = new OutputStreamWriter(client.getOutputStream(), "UTF-8");
+					JSONObject sendMsg = new JSONObject();
+					sendMsg.put("method", "leave room");
+					sendMsg.put("id", id);
+					output.write(sendMsg.toString() + "\n");
+					output.flush();
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				} catch (JSONException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			}
+		});
+		
 		btnScrabble.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				if (playerList.getModel().getSize() != 0) {				
-					JSONObject reply = new JSONObject();
+				if (playerList.getModel().getSize() >= 2) {				
+					JSONObject send = new JSONObject();
 					try {
-						reply.put("method", "start game");
+						System.out.println("start game!");
+						send.put("method", "start game");
 						Writer output = new OutputStreamWriter(client.getOutputStream(), "UTF-8");
-						output.write(reply + "\n");
+						output.write(send.toString() + "\n");
 						output.flush();
 					} catch (JSONException | IOException e1) {
 						// TODO Auto-generated catch block
@@ -362,69 +362,32 @@ public class Room extends JFrame {
 				MyArrayList<Player> temp = new MyArrayList<Player>();
 				try {
 					Writer output = new OutputStreamWriter(client.getOutputStream(), "UTF-8");
-					if (playerList.getModel().getSize() > 0) {
-						if (C1.isSelected()) {
-							int index = playerList.getNextMatch(potentialPlayers.get(0).getName(),0,Position.Bias.Forward);
-							if (index == -1){
-								temp.add(potentialPlayers.get(0));
-							}else{
-								JOptionPane.showMessageDialog(null, "This player already in the room!", "Check the room player list!",
-										JOptionPane.WARNING_MESSAGE);
-							}
-							
-						}
-						if (C2.isSelected()) {
-							int index = playerList.getNextMatch(potentialPlayers.get(1).getName(),0,Position.Bias.Forward);
-							if (index == -1){
-								temp.add(potentialPlayers.get(1));
-							}else{
-								JOptionPane.showMessageDialog(null, "This player already in the room!", "Check the room player list!",
-										JOptionPane.WARNING_MESSAGE);
-							}
-						}
-						if (C3.isSelected()) {
-							int index = playerList.getNextMatch(potentialPlayers.get(2).getName(),0,Position.Bias.Forward);
-							if (index == -1){
-								temp.add(potentialPlayers.get(2));
-							}else{
-								JOptionPane.showMessageDialog(null, "This player already in the room!", "Check the room player list!",
-										JOptionPane.WARNING_MESSAGE);
-							}
-						}
-						if (C4.isSelected()) {
-							int index = playerList.getNextMatch(potentialPlayers.get(3).getName(),0,Position.Bias.Forward);
-							if (index == -1){
-								temp.add(potentialPlayers.get(3));
-							}else{
-								JOptionPane.showMessageDialog(null, "This player already in the room!", "Check the room player list!",
-										JOptionPane.WARNING_MESSAGE);
-							}
-						}
-						if (C5.isSelected()) {
-							int index = playerList.getNextMatch(potentialPlayers.get(4).getName(),0,Position.Bias.Forward);
-							if (index == -1){
-								temp.add(potentialPlayers.get(4));
-							}else{
-								JOptionPane.showMessageDialog(null, "This player already in the room!", "Check the room player list!",
-										JOptionPane.WARNING_MESSAGE);
-							}
-						}
-						if (C6.isSelected()) {
-							int index = playerList.getNextMatch(potentialPlayers.get(5).getName(),0,Position.Bias.Forward);
-							if (index == -1){
-								temp.add(potentialPlayers.get(5));
-							}else{
-								JOptionPane.showMessageDialog(null, "This player already in the room!", "Check the room player list!",
-										JOptionPane.WARNING_MESSAGE);
-							}
-						}
+					if (C1.isSelected()) {
+						temp.add(potentialPlayers.get(0));
+					}
+					if (C2.isSelected()) {
+						temp.add(potentialPlayers.get(1));
+					}
+					if (C3.isSelected()) {
+						temp.add(potentialPlayers.get(2));
+					}
+					if (C4.isSelected()) {
+						temp.add(potentialPlayers.get(3));
+					}
+					if (C5.isSelected()) {
+						temp.add(potentialPlayers.get(4));
+					}
+					if (C6.isSelected()) {
+						temp.add(potentialPlayers.get(5));
+					}
+					if (temp.size() > 0) {
 						sendMsg.put("method", "request invite");
 						sendMsg.put("players", temp.toJson());
+						sendMsg.put("id", id);
 						output.write(sendMsg.toString() + "\n");
 						output.flush();
 					}else{
-						JOptionPane.showMessageDialog(null, "Sorry..there is no player in the room..", "Join the room!",
-								JOptionPane.WARNING_MESSAGE);
+						JOptionPane.showMessageDialog(null, "Sorry..there is no player in the room..", "Join the room!", JOptionPane.WARNING_MESSAGE);
 					}				
 				} catch (UnsupportedEncodingException e1) {
 					e1.printStackTrace();
@@ -478,7 +441,7 @@ public class Room extends JFrame {
 				break;
 			}
 			default:
-				System.out.println("Player size: " + potentialPlayers.size());
+//				System.out.println("Player size: " + potentialPlayers.size());
 			}
 		} catch (JSONException e) {
 			e.printStackTrace();
@@ -509,68 +472,73 @@ public class Room extends JFrame {
 					JSONObject msg = new JSONObject(msgStr);
 					switch (msg.getString("method")) {
 					case "join game": {
-						JSONArray arr = msg.getJSONArray("potentialPlayers");
-						potentialPlayers = new MyArrayList<Player>();
-						for (int i = 0; i < arr.length(); i++) {
-							String getName = arr.getJSONObject(i).getString("name");
-							String path = arr.getJSONObject(i).getString("path");
-							Player player = new Player(getName, path);
-							if (!getName.equals(name)) {
-								potentialPlayers.add(player);
-							}
-						}
-						JSONArray arr2 = msg.getJSONArray("players");
-						players = new MyArrayList<Player>();
-						if (arr2.length() > 0) {
-							String[] model = new String[10];
-							for (int i = 0; i < arr2.length(); i++) {
-								Player player = new Player(arr2.getJSONObject(i));
-								players.add(player);
-								model[i] = player.getName();
-							}
-							playerList.setListData(model);
-						}
-						Room.updatePotentialPlayersNumber(potentialPlayers);
+						Player player = new Player(msg.getJSONObject("player"));
+						profile.setIcon(new ImageIcon(Room.class.getResource(player.getPath())));
 						break;
 					}
 					case "request invite": {
-						String invitor = msg.getString("from");
-						if (!invitor.equals(name)) {
-							int choose = showMsg(invitor);
+						JSONObject inviter = msg.getJSONObject("from");
+						if (inviter.getLong("id") != id) {
+							int choose = showMsg(inviter.getString("name"));
 							JSONObject reply = new JSONObject();
 							reply.put("method", "response invite");
 							reply.put("value", choose);
-							output.write(reply + "\n");
+							reply.put("id", id);
+							output.write(reply.toString() + "\n");
 							output.flush();
 						}
 						break;
 					}
-					case "response invite": {
-						JSONArray arr = msg.getJSONArray("players");
-						players = new MyArrayList<Player>();
-						String[] model = new String[10];
+					case "update": {
+						// update potential players
+						JSONArray arr = msg.getJSONArray("potential players");
+						potentialPlayers = new MyArrayList<Player>();
+						// if not self, update to potential
 						for (int i = 0; i < arr.length(); i++) {
 							Player player = new Player(arr.getJSONObject(i));
-							players.add(player);
-							model[i] = player.getName();
+							if (id != player.getId()) {
+								potentialPlayers.add(player);
+							}
 						}
-						playerList.setListData(model);
+						Room.updatePotentialPlayersNumber(potentialPlayers);
+						
+						// update players; if not include self, set only self
+						arr = msg.getJSONArray("players");
+						players = new MyArrayList<Player>();
+						String[] playersName = new String[10];
+						boolean doesHaveSelf = false;
+						if (arr.length() > 0) {
+							for (int i = 0; i < arr.length(); i++) {
+//								System.out.println("before sort: " + arr.getJSONObject(i).getString("name"));
+								Player player = new Player(arr.getJSONObject(i));
+								players.add(player);
+								playersName[i] = player.getName();
+								if (id == player.getId()) {
+									doesHaveSelf = true;
+								}
+							}
+						}
+						if (!doesHaveSelf) {
+							for (int i=0; i<playersName.length; i++) {
+								playersName[i] = null;
+							}
+						}
+						for (int j=0; j<playersName.length; j++) {
+//							System.out.println("after sort: " + playersName[j]);
+						}
+						playerList.setListData(playersName);
 						break;
 					}
+					
 					case "turn": {
-						System.out.println("chessboard");
+						System.out.println("Game begin!!!!!!!");
+						System.out.println();
 						// is my turn
-						boolean myTurn = false;
 						JSONObject player = msg.getJSONObject("player");
-						if (player.getString("name").equals(name)) {
-							myTurn = true;
-						} else {
-							myTurn = false;
-						}
-						instrcution frame = new instrcution();
+						Instrcution frame = new Instrcution();
 						frame.setVisible(true);
 						frame.setTitle("Instructions");	
-						ChessBoard game = new ChessBoard(name, msg, client, myTurn);
+						ChessBoard game = new ChessBoard(name, id, msg, client);
 						System.out.println(msg);
 						game.setUndecorated(true);
 						game.setVisible(true);

@@ -48,6 +48,7 @@ public class ChessBoard extends JFrame implements ActionListener, KeyListener {
 	private JPanel contentPane;
 	private Socket client;
 	private String name;
+	private long id;
 	private boolean myTurn = false;
 	private int xx, xy;
 	private MyArrayList<Player> players;
@@ -62,17 +63,24 @@ public class ChessBoard extends JFrame implements ActionListener, KeyListener {
 	private JLabel voteP1, voteP2, voteP3, voteP4;
 	private JLabel lblImg1, lblImg2, lblImg3, lblImg4;
 
-	public ChessBoard(String name, JSONObject msg, Socket client, boolean myTurn) {
+	public ChessBoard(String name, long id, JSONObject msg, Socket client) {
 		this.name = name;
-		this.myTurn = myTurn;
+		this.id = id;
 		this.client = client;
+
 		try {
 			JSONArray arr = msg.getJSONArray("players");
 			players = new MyArrayList<Player>();
+			Player player = new Player(msg.getJSONObject("player"));
+			if (player.getId() == id) {
+				this.myTurn = true;
+			}
+			//update players
 			for (int i = 0; i < arr.length(); i++) {
-				Player player = new Player(arr.getJSONObject(i));
+				player = new Player(arr.getJSONObject(i));
 				players.add(player);
 			}
+			
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -229,17 +237,8 @@ public class ChessBoard extends JFrame implements ActionListener, KeyListener {
 				try {
 					Writer output = new OutputStreamWriter(client.getOutputStream(), "UTF-8");
 					sendMsg.put("method", "turn");
+					sendMsg.put("id", id);
 					sendMsg.put("word", "");
-					// generated 2D json array
-					JSONArray map = new JSONArray();
-					for (int i = 0; i < 20; i++) {
-						JSONArray cloumn = new JSONArray();
-						for (int j = 0; j < 20; j++) {
-							cloumn.put(squares[i][j].getText());
-						}
-						map.put(cloumn);
-					}
-					sendMsg.put("map", map);
 					System.out.println("sent pass");
 					output.write(sendMsg.toString() + "\n");
 					output.flush();
@@ -293,16 +292,27 @@ public class ChessBoard extends JFrame implements ActionListener, KeyListener {
 		}
 	}
 
+	int currenti = -1;
+	int currentj = -1;
 	@Override
 	public void keyPressed(KeyEvent e) {
 		Object source = e.getSource();
 		for (int i = 0; i < 20; i++) {
 			for (int j = 0; j < 20; j++) {
 				if (source == squares[i][j]) {
-					if (!squares[i][j].getText().equals(""))
-						return;
+					System.out.println("this: " + i + ", " + j + "; current: " + currenti + ", " + currentj);
+					if (currenti != -1 && currentj != -1) {
+						System.out.println("not empty");
+						if (!squares[i][j].getText().equals("") ||(currenti == i && currentj == j)) {
+							System.out.println("return");
+							return;
+						}
+					}
+						
 					if (e.getKeyCode() >= 65 && e.getKeyCode() <= 90) {
 						char input = e.getKeyChar();
+						currenti = i;
+						currentj = j;
 						// System.out.println(e.getKeyChar());
 						squares[i][j].setText(Character.toString(input));
 					} else {
@@ -325,8 +335,7 @@ public class ChessBoard extends JFrame implements ActionListener, KeyListener {
 			for (int j = 0; j < 20; j++) {
 				if (source == squares[i][j]) {
 					squares[i][j].setBorderPainted(true);
-					if (e.getKeyCode() >= 37 && e.getKeyCode() <= 40) { // UP &
-																		// DOWN
+					if (e.getKeyCode() >= 37 && e.getKeyCode() <= 40) { // UP & DOWN
 						if (e.getKeyCode() == 38 || e.getKeyCode() == 40) {
 							word = checkVWord(i, j);
 						} else { // LEFT & RIGHT
@@ -338,6 +347,7 @@ public class ChessBoard extends JFrame implements ActionListener, KeyListener {
 						try {
 							Writer output = new OutputStreamWriter(client.getOutputStream(), "UTF-8");
 							sendMsg.put("method", "turn");
+							sendMsg.put("id", id);
 							sendMsg.put("word", word);
 							// generated 2D json array
 							JSONArray map = new JSONArray();
@@ -352,7 +362,6 @@ public class ChessBoard extends JFrame implements ActionListener, KeyListener {
 							System.out.println(sendMsg.toString());
 							output.write(sendMsg.toString() + "\n");
 							output.flush();
-							myTurn = false;
 						} catch (JSONException | IOException e1) { // TODOAuto-generated
 																	// catch
 																	// block
@@ -591,6 +600,11 @@ public class ChessBoard extends JFrame implements ActionListener, KeyListener {
 						}
 						setPlayerList();
 						break;
+					}
+					case "end": {
+						GameOver end = new GameOver(name, players, client);
+						System.out.println("Game over");
+						return;
 					}
 					}
 				}

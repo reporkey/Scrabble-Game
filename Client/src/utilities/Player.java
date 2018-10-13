@@ -9,30 +9,18 @@ import java.util.Random;
 public class Player {
 
     private String name;
+    private long id;
     private String path;
     private int accept = -1;
     private int vote = -1;
     private int score = 0;
     private JSONObject obj;
 
-    public Player(String name,String path) throws JSONException {
-    	
-        this.name = name;
-        this.path=path;                
-
-        obj = new JSONObject();
-        obj.put("name", name);
-        obj.put("path", path);
-        obj.put("accept", accept);
-        obj.put("vote", vote);
-        obj.put("score", score);
-    }
-
-
     public Player(JSONObject obj) {
 		this.obj = obj;
 		try {
 			name = obj.getString("name");
+			id = obj.getLong("id");
 			path = obj.getString("path");
 			accept = obj.getInt("accept");
 			vote = obj.getInt("vote");
@@ -77,5 +65,9 @@ public class Player {
 	
 	public String getPath() {
 		return path;
+	}
+	
+	public long getId() {
+		return id;
 	}
 }
