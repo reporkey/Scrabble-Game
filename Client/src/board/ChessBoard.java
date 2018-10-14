@@ -212,7 +212,7 @@ public class ChessBoard extends JFrame implements ActionListener, KeyListener {
 		panel_2.add(lblImg4);
 
 		labelPlayerName = new JLabel(name);
-		labelPlayerName.setFont(new Font("Muna", Font.BOLD, 16));
+		labelPlayerName.setFont(new Font("Muna", Font.BOLD, 14));
 		labelPlayerName.setBounds(56, 371, 134, 33);
 		labelPlayerName.setForeground(Color.WHITE);
 		panel_2.add(labelPlayerName);
@@ -234,6 +234,31 @@ public class ChessBoard extends JFrame implements ActionListener, KeyListener {
 		lblHi.setBounds(26, 379, 18, 16);
 		panel_2.add(lblHi);
 		
+		JLabel logout = new JLabel("");
+
+		logout.setIcon(new ImageIcon(ChessBoard.class.getResource("/img/logout.png")));
+		logout.setBounds(704, 6, 43, 29);
+		contentPane.add(logout);
+
+		// exit
+		logout.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				JSONObject sendMsg = new JSONObject();
+//				try {
+//					Writer output = new OutputStreamWriter(client.getOutputStream(), "UTF-8");
+//					sendMsg.put("method", "quit");
+//					sendMsg.put("id", id);
+//					output.write(sendMsg.toString() + "\n");
+//					output.flush();
+					System.exit(0);
+//				} catch (JSONException | IOException e1) {
+//					// TODO Auto-generated catch block
+//					e1.printStackTrace();
+//				}
+			}
+		});
+		
 		// pass
 		btnPass.addMouseListener(new MouseAdapter() {
 			@Override
@@ -244,6 +269,9 @@ public class ChessBoard extends JFrame implements ActionListener, KeyListener {
 				}
 				JSONObject sendMsg = new JSONObject();
 				try {
+					if (lasti != -1 && lastj != -1) {
+						squares[lasti][lastj].setText("");
+					}
 					Writer output = new OutputStreamWriter(client.getOutputStream(), "UTF-8");
 					sendMsg.put("method", "turn");
 					sendMsg.put("id", id);
@@ -257,33 +285,8 @@ public class ChessBoard extends JFrame implements ActionListener, KeyListener {
 				}
 			}
 		});
-
-		JLabel logout = new JLabel("");
-
-		logout.setIcon(new ImageIcon(ChessBoard.class.getResource("/img/logout.png")));
-		logout.setBounds(704, 6, 43, 29);
-		contentPane.add(logout);
-
-		// exit
-		logout.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseClicked(MouseEvent e) {
-				JSONObject sendMsg = new JSONObject();
-				try {
-					Writer output = new OutputStreamWriter(client.getOutputStream(), "UTF-8");
-					sendMsg.put("method", "quit");
-					sendMsg.put("id", id);
-					output.write(sendMsg.toString() + "\n");
-					output.flush();
-					dispose();
-				} catch (JSONException | IOException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
-			}
-		});
 	}
-
+	
 	// button click
 	@Override
 	public void actionPerformed(ActionEvent e) {
@@ -578,8 +581,7 @@ public class ChessBoard extends JFrame implements ActionListener, KeyListener {
 					switch (msg.getString("method")) {
 					case "turn": {
 						// whose turn
-						whoseTurnId = msg.getJSONObject("player").getLong("id");
-						
+						whoseTurnId = msg.getJSONObject("player").getLong("id");						
 						// update map
 						if (msg.has("map")) {
 							JSONArray map = msg.getJSONArray("map");
@@ -650,7 +652,7 @@ public class ChessBoard extends JFrame implements ActionListener, KeyListener {
 						// update map
 						try {
 							JSONArray map = msg.getJSONArray("map");
-							System.out.println("update map");
+							//System.out.println("update map");
 							if (map != null) {
 								for (int i = 0; i < map.length(); i++) {
 									JSONArray row = map.getJSONArray(i);
@@ -668,7 +670,7 @@ public class ChessBoard extends JFrame implements ActionListener, KeyListener {
 						GameOver end = new GameOver(name, players, client);
 						System.out.println("Game over");
 						end.setVisible(true);
-						System.exit(0);
+						dispose();
 						return;
 					}
 					}

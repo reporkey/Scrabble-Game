@@ -387,20 +387,23 @@ public class Room extends JFrame {
 		panelPlayer6.setVisible(false);
 		panelPlayer7.setVisible(false);
 		switch (temp.size()) {
+		case 0: {
+			((JCheckBox)panelPlayer2.getComponent(1)).setSelected(false);
+		}
 		case 1: {
-			((JCheckBox)panelPlayer7.getComponent(1)).setSelected(false);
+			((JCheckBox)panelPlayer3.getComponent(1)).setSelected(false);
 		}
 		case 2: {
-			((JCheckBox)panelPlayer6.getComponent(1)).setSelected(false);
+			((JCheckBox)panelPlayer4.getComponent(1)).setSelected(false);
 		}
 		case 3: {
 			((JCheckBox)panelPlayer5.getComponent(1)).setSelected(false);
 		}
 		case 4: {
-			((JCheckBox)panelPlayer4.getComponent(1)).setSelected(false);
+			((JCheckBox)panelPlayer6.getComponent(1)).setSelected(false);
 		}
 		case 5: {
-			((JCheckBox)panelPlayer3.getComponent(1)).setSelected(false);
+			((JCheckBox)panelPlayer7.getComponent(1)).setSelected(false);
 			break;
 		}
 		}

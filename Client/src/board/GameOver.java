@@ -52,7 +52,7 @@ public class GameOver extends JFrame {
 	private void guiInitialize(String name, MyArrayList<Player> players) {
 		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 363, 698);
+		setBounds(100, 100, 360, 800);
 		contentPane = new JPanel();
 		contentPane.setBackground(Color.WHITE);
 		contentPane.addMouseMotionListener(new MouseMotionAdapter() {
@@ -82,7 +82,7 @@ public class GameOver extends JFrame {
 		
 		JPanel panel = new JPanel();
 		panel.setBackground(Color.WHITE);
-		panel.setBounds(0, 211, 360, 382);
+		panel.setBounds(0, 163, 360, 430);
 		contentPane.add(panel);
 		panel.setLayout(null);
 		
@@ -143,7 +143,7 @@ public class GameOver extends JFrame {
 		btnOk.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				dispose();
+				System.exit(0);;
 			}
 		});
 		btnOk.setBounds(117, 605, 117, 54);
