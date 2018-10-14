@@ -17,7 +17,7 @@ public class Main {
 			serverPort = Integer.parseInt(args[1]);
 		}else {
 			System.out.println("Not correct number of inputs.");
-			System.out.println("java -jar client.jar ip 8080");
+			System.out.println("java -jar client.jar ip [port]");
 		}
 		if(createServerSocket(serverIp, serverPort)) {
 			Login window = new Login(server);

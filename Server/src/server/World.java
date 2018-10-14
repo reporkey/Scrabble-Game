@@ -10,7 +10,7 @@ import java.util.ArrayList;
 
 public class World {
 
-	private static final int port = 8080;
+	private static int port;
 	public volatile MyArrayList<Player> players = new MyArrayList<Player>();
 	public volatile MyArrayList<Player> invitedPlayers = new MyArrayList<Player>();
 	public volatile MyArrayList<Player> potentialPlayers = new MyArrayList<Player>();
@@ -19,8 +19,8 @@ public class World {
 	private volatile int pass = 0;
 	private volatile boolean start = false;
 
-	public World() {
-
+	public World(int port) {
+		this.port = port;
 		ServerSocketFactory factory = ServerSocketFactory.getDefault();
 
 		// Game begin
